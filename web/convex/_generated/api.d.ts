@@ -8,10 +8,17 @@
  * @module
  */
 
+import type * as bot from "../bot.js";
+import type * as botActions from "../botActions.js";
 import type * as crons from "../crons.js";
+import type * as http from "../http.js";
 import type * as matching from "../matching.js";
 import type * as notify from "../notify.js";
+import type * as seed from "../seed.js";
+import type * as sources_apify from "../sources/apify.js";
+import type * as sources_normalize from "../sources/normalize.js";
 import type * as trust from "../trust.js";
+import type * as whatsapp from "../whatsapp.js";
 
 import type {
   ApiFromModules,
@@ -20,10 +27,17 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  bot: typeof bot;
+  botActions: typeof botActions;
   crons: typeof crons;
+  http: typeof http;
   matching: typeof matching;
   notify: typeof notify;
+  seed: typeof seed;
+  "sources/apify": typeof sources_apify;
+  "sources/normalize": typeof sources_normalize;
   trust: typeof trust;
+  whatsapp: typeof whatsapp;
 }>;
 
 /**
