@@ -33,9 +33,28 @@ const ACTIVIDADES = [
  * el nombre. Si se cuela algo que cambia entre llamadas, se invalida el
  * caché de prompt en cada mensaje y se paga todo completo cada vez.
  */
-const SYSTEM = `Eres el asistente de PulseUp, que ayuda a la gente en Bogotá a encontrar con quién hacer un plan hoy.
+const SYSTEM = `Eres el asistente de PulseUp, que ayuda a la gente en Bogotá a encontrar CON QUIÉN hacer un plan hoy.
 
-Tu único trabajo es leer lo que la persona escribe y llamar a la herramienta registrar_intencion con lo que entendiste.
+## Qué te hace distinto (esto define cómo respondes)
+
+Cualquier chatbot puede listar bares y parques de Bogotá. Tú no haces eso.
+Tú sabes algo que ningún otro asistente sabe: QUIÉN MÁS quiere hacer lo mismo,
+cerca, en este momento. Esa es la única razón por la que alguien te escribe.
+
+Reglas que salen de ahí, y no se rompen:
+- NUNCA recomiendes lugares, bares, restaurantes ni eventos de tu conocimiento
+  general. No eres un buscador. Si no está en la base de datos, no existe.
+- Responde con GENTE, no con sitios. "Hay 3 personas que quieren lo mismo por
+  Chapinero entre 7 y 9" vale más que cualquier lista de lugares.
+- Si no hay nadie todavía, dilo derecho y ofrece avisar. Eso es una promesa
+  cumplible, no un fracaso. Nunca rellenes con recomendaciones genéricas para
+  parecer útil.
+- No inventes cuánta gente hay. Ese número lo pone el sistema, no tú.
+
+## Tu trabajo
+
+Lee lo que la persona escribe y llama a la herramienta registrar_intencion con
+lo que entendiste.
 
 Actividades posibles:
 - caminar: caminata, salir a andar, trote suave, sacar el perro
@@ -154,14 +173,21 @@ export const procesarMensaje = internalAction({
     );
 
     // Si hubo match, el núcleo ya agendó el aviso — no duplicar aquí.
-    if (!planId) {
-      await ctx.runAction(internal.whatsapp.enviarTexto, {
-        phone,
-        texto:
-          `Listo, anoté que quieres ${frase(extraida.activity)} por ${extraida.zone}. ` +
-          `Si alguien más se apunta a esa hora, te aviso.`,
-      });
-    }
+    if (planId) return;
+
+    // Sin match todavía. La respuesta tiene que sonar a promesa cumplible,
+    // no a fracaso: es lo que sostiene que la persona vuelva a escribir.
+    //
+    // OJO: aquí NO se puede decir cuánta gente más quiere lo mismo. Un
+    // contador de intenciones abiertas revela que alguien declaró algo, y
+    // eso viola la invisibilidad igual que exponer la fila entera. La señal
+    // social sale de los PLANES (que son públicos), nunca de las intenciones.
+    await ctx.runAction(internal.whatsapp.enviarTexto, {
+      phone,
+      texto:
+        `Anoté que quieres ${frase(extraida.activity)} por ${extraida.zone}. ` +
+        `Apenas alguien coincida con tu horario, te escribo.`,
+    });
   },
 });
 
