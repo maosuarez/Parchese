@@ -1,0 +1,211 @@
+"use node";
+
+import Anthropic from "@anthropic-ai/sdk";
+import { v } from "convex/values";
+import { internalAction } from "./_generated/server";
+import { internal } from "./_generated/api";
+
+// El cerebro del canal: convierte "uy me provoca caminar por el norte esta
+// tarde" en { activity, zone, windowStart, windowEnd }.
+//
+// Vive en un archivo aparte de bot.ts (y con "use node") porque el SDK de
+// Anthropic usa node:fs / node:path. Regla de Convex: un archivo con
+// "use node" NO puede exportar queries ni mutations, así que la mutation
+// recibirMensaje se queda en bot.ts (runtime por defecto) y aquí solo va
+// la acción que llama al modelo.
+//
+// Modelo: MiniMax por su endpoint compatible con Anthropic. Mismo SDK, solo
+// cambia la URL base. Si mañana hay que cambiar de proveedor, se toca solo
+// `cliente()` y el nombre del modelo.
+
+const MODELO = process.env.MINIMAX_MODEL ?? "MiniMax-M2.5";
+
+function cliente() {
+  const apiKey = process.env.MINIMAX_API_KEY;
+  if (!apiKey) throw new Error("Falta MINIMAX_API_KEY en el entorno de Convex.");
+  return new Anthropic({ apiKey, baseURL: "https://api.minimax.io/anthropic" });
+}
+
+const ACTIVIDADES = [
+  "caminar",
+  "cafe",
+  "cowork",
+  "juego",
+  "cancha",
+  "otro",
+] as const;
+
+/**
+ * Instrucciones fijas. Nada variable aquí — ni la hora, ni el teléfono, ni
+ * el nombre. Si se cuela algo que cambia entre llamadas, se invalida el
+ * caché de prompt en cada mensaje y se paga todo completo cada vez.
+ */
+const SYSTEM = `Eres el asistente de PulseUp, que ayuda a la gente en Bogotá a encontrar con quién hacer un plan hoy.
+
+Tu único trabajo es leer lo que la persona escribe y llamar a la herramienta registrar_intencion con lo que entendiste.
+
+Actividades posibles:
+- caminar: caminata, salir a andar, trote suave, sacar el perro
+- cafe: tomar café, desayunar, almorzar, charlar en un café
+- cowork: trabajar acompañado, estudiar junto a alguien, cowork en silencio
+- juego: juegos de mesa, cartas, ajedrez, videojuegos presenciales
+- cancha: fútbol, básquet, tenis, pádel, cualquier deporte de cancha
+- otro: cualquier plan que no encaje arriba
+
+Zonas de Bogotá: chapinero, usaquen, suba, teusaquillo, centro, chico, cedritos, kennedy, engativa, fontibon, candelaria, norte, sur, occidente. Normaliza sin tildes y en minúscula. "El norte" es norte. "La 93" o "zona T" es chico.
+
+Reglas:
+- Si no entiendes la actividad, la zona o cuándo quiere, pon confident en false. NUNCA inventes.
+- Si no dice duración, asume 2 horas.
+- Si dice "ahora" o "ya", hoursFromNow es 0. "Más tarde" o "esta tarde" es 3. "En la noche" es 5.
+- Nunca menciones salud, sedentarismo, ejercicio como obligación, ni sugieras que la persona debería moverse o salir más. Ni una palabra sobre eso.
+- Escribe en español de Colombia, cercano y breve. Sin emojis en exceso.`;
+
+/** Llama al modelo y decide: registrar la intención o preguntar con botones. */
+export const procesarMensaje = internalAction({
+  args: {
+    userId: v.id("users"),
+    phone: v.string(),
+    texto: v.string(),
+    buttonId: v.optional(v.string()),
+  },
+  handler: async (ctx, { userId, phone, texto, buttonId }) => {
+    let extraida: Extraida | null = null;
+
+    try {
+      extraida = await extraerIntencion(texto, buttonId);
+    } catch (error) {
+      console.error("[bot] falló la extracción:", error);
+      await ctx.runAction(internal.whatsapp.enviarTexto, {
+        phone,
+        texto: "Se me enredó algo por acá. ¿Me lo escribes otra vez?",
+      });
+      return;
+    }
+
+    // Sin confianza no se inventa nada: se pregunta con botones, que
+    // devuelven un id determinista y no hay que volver a interpretar.
+    if (!extraida || !extraida.confident) {
+      await ctx.runAction(internal.whatsapp.enviarBotones, {
+        phone,
+        texto: "¿Qué te provoca hacer hoy?",
+        botones: [
+          { id: "act:caminar", titulo: "Caminar" },
+          { id: "act:cafe", titulo: "Un café" },
+          { id: "act:cowork", titulo: "Trabajar cerca" },
+        ],
+      });
+      return;
+    }
+
+    const windowStart = Date.now() + extraida.hoursFromNow * 3_600_000;
+    const windowEnd = windowStart + extraida.durationHours * 3_600_000;
+
+    const { planId } = await ctx.runMutation(
+      internal.matching.registrarIntencionDeWhatsapp,
+      {
+        userId,
+        activity: extraida.activity,
+        zone: extraida.zone,
+        windowStart,
+        windowEnd,
+      },
+    );
+
+    // Si hubo match, el núcleo ya agendó el aviso — no duplicar aquí.
+    if (!planId) {
+      await ctx.runAction(internal.whatsapp.enviarTexto, {
+        phone,
+        texto:
+          `Listo, anoté que quieres ${frase(extraida.activity)} por ${extraida.zone}. ` +
+          `Si alguien más se apunta a esa hora, te aviso.`,
+      });
+    }
+  },
+});
+
+type Extraida = {
+  activity: (typeof ACTIVIDADES)[number];
+  zone: string;
+  hoursFromNow: number;
+  durationHours: number;
+  confident: boolean;
+};
+
+/**
+ * Usa tool calling en vez de salida estructurada nativa: es lo que el
+ * endpoint compatible de MiniMax soporta con seguridad, y funciona igual
+ * en cualquier proveedor si toca cambiar.
+ */
+async function extraerIntencion(
+  texto: string,
+  buttonId?: string,
+): Promise<Extraida | null> {
+  const pista = buttonId ? `\n\n(La persona pulsó el botón: ${buttonId})` : "";
+
+  const response = await cliente().messages.create({
+    model: MODELO,
+    max_tokens: 1024,
+    system: SYSTEM,
+    tools: [
+      {
+        name: "registrar_intencion",
+        description:
+          "Registra lo que la persona quiere hacer. Llama siempre a esta herramienta, incluso cuando no estés seguro (con confident en false).",
+        input_schema: {
+          type: "object",
+          properties: {
+            activity: { type: "string", enum: [...ACTIVIDADES] },
+            zone: { type: "string" },
+            hoursFromNow: { type: "number" },
+            durationHours: { type: "number" },
+            confident: { type: "boolean" },
+          },
+          required: [
+            "activity",
+            "zone",
+            "hoursFromNow",
+            "durationHours",
+            "confident",
+          ],
+        },
+      },
+    ],
+    tool_choice: { type: "tool", name: "registrar_intencion" },
+    messages: [{ role: "user", content: texto + pista }],
+  });
+
+  const bloque = response.content.find((b) => b.type === "tool_use");
+  if (!bloque || bloque.type !== "tool_use") return null;
+
+  // El input viene como objeto ya parseado; validamos a mano porque un
+  // modelo puede devolver algo fuera del enum aunque el schema lo prohíba.
+  const raw = bloque.input as Record<string, unknown>;
+  const act = String(raw.activity ?? "");
+  if (!ACTIVIDADES.includes(act as (typeof ACTIVIDADES)[number])) return null;
+
+  const horas = Number(raw.hoursFromNow);
+  const duracion = Number(raw.durationHours);
+
+  return {
+    activity: act as (typeof ACTIVIDADES)[number],
+    zone: String(raw.zone ?? "").toLowerCase().trim() || "centro",
+    hoursFromNow: Number.isFinite(horas) ? Math.max(0, Math.min(horas, 12)) : 0,
+    durationHours: Number.isFinite(duracion)
+      ? Math.max(1, Math.min(duracion, 6))
+      : 2,
+    confident: raw.confident === true,
+  };
+}
+
+function frase(a: (typeof ACTIVIDADES)[number]): string {
+  const frases: Record<string, string> = {
+    caminar: "caminar",
+    cafe: "tomarte un café",
+    cowork: "trabajar acompañado",
+    juego: "jugar algo",
+    cancha: "jugar en cancha",
+    otro: "hacer un plan",
+  };
+  return frases[a] ?? "hacer un plan";
+}

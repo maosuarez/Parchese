@@ -18,6 +18,35 @@ import { internal } from "./_generated/api";
 
 const http = httpRouter();
 
+// Suscripción de webhook de Meta (WhatsApp Cloud API directo). Meta hace un
+// GET con hub.mode=subscribe y un hub.verify_token; hay que devolver el
+// hub.challenge en texto plano si el token coincide. Kapso no usa este
+// handshake, pero el canal directo de Meta sí, y la spec lo exige.
+http.route({
+  path: "/webhook/whatsapp",
+  method: "GET",
+  handler: httpAction(async (_ctx, request) => {
+    const url = new URL(request.url);
+    const mode = url.searchParams.get("hub.mode");
+    const token = url.searchParams.get("hub.verify_token");
+    const challenge = url.searchParams.get("hub.challenge");
+    const esperado = process.env.META_VERIFY_TOKEN;
+
+    if (
+      mode === "subscribe" &&
+      esperado &&
+      token === esperado &&
+      challenge !== null
+    ) {
+      return new Response(challenge, {
+        status: 200,
+        headers: { "Content-Type": "text/plain" },
+      });
+    }
+    return new Response("Forbidden", { status: 403 });
+  }),
+});
+
 http.route({
   path: "/webhook/whatsapp",
   method: "POST",

@@ -8,10 +8,14 @@
  * @module
  */
 
+import type * as bot from "../bot.js";
+import type * as botLlm from "../botLlm.js";
 import type * as crons from "../crons.js";
+import type * as http from "../http.js";
 import type * as matching from "../matching.js";
 import type * as notify from "../notify.js";
 import type * as trust from "../trust.js";
+import type * as whatsapp from "../whatsapp.js";
 
 import type {
   ApiFromModules,
@@ -20,10 +24,14 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  bot: typeof bot;
+  botLlm: typeof botLlm;
   crons: typeof crons;
+  http: typeof http;
   matching: typeof matching;
   notify: typeof notify;
   trust: typeof trust;
+  whatsapp: typeof whatsapp;
 }>;
 
 /**
