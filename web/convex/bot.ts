@@ -59,6 +59,30 @@ export const recibirMensaje = internalMutation({
  *
  * Solo la última hora: una conversación de ayer no es contexto útil, es ruido.
  */
+/**
+ * Guarda lo que el bot respondió.
+ *
+ * Sin esto el modelo solo ve los mensajes del usuario, no sus propias
+ * preguntas, y la conversación se vuelve incoherente. Fue el bug que hacía
+ * que el bot "delirara".
+ */
+export const guardarSalida = internalMutation({
+  args: { phone: v.string(), texto: v.string() },
+  handler: async (ctx, { phone, texto }) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_phone", (q) => q.eq("phone", phone))
+      .unique();
+
+    await ctx.db.insert("messages", {
+      userId: user?._id,
+      phone,
+      direction: "out",
+      body: texto,
+    });
+  },
+});
+
 export const mensajesRecientes = internalQuery({
   args: { phone: v.string() },
   handler: async (ctx, { phone }) => {

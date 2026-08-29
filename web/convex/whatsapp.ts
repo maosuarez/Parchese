@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { internalAction } from "./_generated/server";
+import { internal } from "./_generated/api";
 
 // Canal de salida hacia WhatsApp, vía Kapso.
 //
@@ -43,13 +44,16 @@ async function enviar(body: Record<string, unknown>): Promise<void> {
 
 export const enviarTexto = internalAction({
   args: { phone: v.string(), texto: v.string() },
-  handler: async (_ctx, { phone, texto }) => {
+  handler: async (ctx, { phone, texto }) => {
     await enviar({
       recipient_type: "individual",
       to: phone,
       type: "text",
       text: { body: texto },
     });
+    // Guardar lo enviado: sin esto el modelo no recuerda sus propias
+    // preguntas y la conversación se vuelve incoherente.
+    await ctx.runMutation(internal.bot.guardarSalida, { phone, texto });
   },
 });
 
@@ -68,7 +72,7 @@ export const enviarBotones = internalAction({
     texto: v.string(),
     botones: v.array(v.object({ id: v.string(), titulo: v.string() })),
   },
-  handler: async (_ctx, { phone, texto, botones }) => {
+  handler: async (ctx, { phone, texto, botones }) => {
     if (botones.length === 0 || botones.length > 3) {
       throw new Error("WhatsApp acepta entre 1 y 3 botones.");
     }
@@ -91,6 +95,11 @@ export const enviarBotones = internalAction({
           })),
         },
       },
+    });
+
+    await ctx.runMutation(internal.bot.guardarSalida, {
+      phone,
+      texto: `${texto} [opciones: ${botones.map((b) => b.titulo).join(" · ")}]`,
     });
   },
 });

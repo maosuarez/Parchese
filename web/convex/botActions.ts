@@ -26,6 +26,8 @@ function cliente() {
 
 const ACTIVIDADES = [
   "caminar",
+  "correr",
+  "bici",
   "cafe",
   "cowork",
   "juego",
@@ -62,7 +64,9 @@ Lee lo que la persona escribe y llama a la herramienta registrar_intencion con
 lo que entendiste.
 
 Actividades posibles:
-- caminar: caminata, salir a andar, trote suave, sacar el perro
+- caminar: caminata, salir a andar, sacar el perro, tomar aire
+- correr: trotar, running, salir a correr, entrenar para una carrera
+- bici: montar bicicleta, ciclovía, rodada, salir en cicla
 - cafe: tomar café, desayunar, almorzar, charlar en un café
 - cowork: trabajar acompañado, estudiar junto a alguien, cowork en silencio
 - juego: juegos de mesa, cartas, ajedrez, videojuegos presenciales
@@ -72,7 +76,7 @@ Actividades posibles:
 Zonas de Bogotá: chapinero, usaquen, suba, teusaquillo, centro, chico, cedritos, kennedy, engativa, fontibon, candelaria, chapinero_alto, salitre, modelia, galerias, norte, sur, occidente.
 Normaliza sin tildes y en minúscula. Referencias comunes:
 - "la 93", "zona T", "zona rosa", "parque de la 93" → chico
-- "corferias", "salitre", "el campin", "simon bolivar" → salitre
+- "corferias", "gran estacion", "salitre", "el campin", "simon bolivar" → salitre
 - "la candelaria", "centro historico" → candelaria
 - "el norte" → norte · "el sur" → sur · "usaquen", "la 116" → usaquen
 - "galerias", "la 53" → galerias
@@ -82,10 +86,20 @@ Reglas de extracción — LEE ESTO CON CUIDADO:
 - En "missing" pon SOLO lo que la persona no dijo ni se puede inferir: "activity", "zone" o "time".
 - Si dice algo genérico como "algo activo", "deportivo", "quemar energía" → activity es cancha.
   "Algo tranquilo", "relajado", "charlar" → cafe. "Salir a andar", "tomar aire" → caminar.
-- Si nombra un lugar o barrio, deduce la zona. Solo pon "zone" en missing si no dijo NADA de ubicación.
+- ZONA: si la persona NO nombró ningún lugar, barrio, punto de referencia ni
+  dirección, pon "zone" en missing y deja zone en "". NUNCA elijas una zona
+  por tu cuenta ni pongas una "por defecto". Un plan en la zona equivocada es
+  peor que no tener plan.
+  Si nombra un lugar, dedúcelo. "Ciclovía" sola NO es una zona: la ciclovía
+  cruza toda la ciudad.
 - Si dice "hoy" sin hora, eso NO alcanza: pon "time" en missing.
 - Si no dice duración, asume 2 horas. Eso nunca va en missing.
-- Si dice "ahora" o "ya", hoursFromNow es 0. "Más tarde" o "esta tarde" es 3. "En la noche" es 5.
+- hoursFromNow son horas desde AHORA, y puede pasar de 24 para días futuros.
+  "ahora"/"ya" → 0 · "más tarde"/"esta tarde" → 3 · "en la noche" → 5
+  "mañana en la mañana" → las horas que falten hasta mañana 9am
+  "el domingo a las 10am" → las horas que falten hasta ese domingo 10am
+  Si nombra un día de la semana, calcula cuántas horas faltan. No lo pongas
+  en missing solo porque es lejano.
 - Nunca menciones salud, sedentarismo, ejercicio como obligación, ni sugieras que la persona debería moverse o salir más. Ni una palabra sobre eso.
 - Escribe en español de Colombia, cercano y breve. Sin emojis en exceso.`;
 
@@ -277,7 +291,7 @@ async function extraerIntencion(
   return {
     activity: act as (typeof ACTIVIDADES)[number],
     zone: String(raw.zone ?? "").toLowerCase().trim() || "centro",
-    hoursFromNow: Number.isFinite(horas) ? Math.max(0, Math.min(horas, 12)) : 0,
+    hoursFromNow: Number.isFinite(horas) ? Math.max(0, Math.min(horas, 24 * 8)) : 0,
     durationHours: Number.isFinite(duracion)
       ? Math.max(1, Math.min(duracion, 6))
       : 2,
@@ -292,6 +306,8 @@ async function extraerIntencion(
 function frase(a: (typeof ACTIVIDADES)[number]): string {
   const frases: Record<string, string> = {
     caminar: "caminar",
+    correr: "salir a correr",
+    bici: "montar bici",
     cafe: "tomarte un café",
     cowork: "trabajar acompañado",
     juego: "jugar algo",

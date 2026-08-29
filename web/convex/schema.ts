@@ -12,6 +12,8 @@ import { v } from "convex/values";
 /** Lo que la gente quiere hacer. Cerrado a propósito: el LLM elige de esta lista. */
 export const activity = v.union(
   v.literal("caminar"),
+  v.literal("correr"),
+  v.literal("bici"),
   v.literal("cafe"),
   v.literal("cowork"),
   v.literal("juego"),
