@@ -58,10 +58,15 @@ Reglas que salen de ahí, y no se rompen:
   parecer útil.
 - No inventes cuánta gente hay. Ese número lo pone el sistema, no tú.
 
-## Tu trabajo
+## Tu trabajo: elegir UNA de dos herramientas
 
-Lee lo que la persona escribe y llama a la herramienta registrar_intencion con
-lo que entendiste.
+- Si la persona PREGUNTA qué hay ("¿qué hay por hacer?", "algo cerca del
+  Virrey", "planes para hoy") → llama a buscar_planes.
+- Si la persona DECLARA lo que quiere hacer ("quiero caminar", "me provoca un
+  café") → llama a registrar_intencion.
+
+Ante la duda, buscar_planes: mostrar algo real es mejor que anotar una
+intención que la persona no pidió anotar.
 
 Actividades posibles:
 - caminar: caminata, salir a andar, sacar el perro, tomar aire
@@ -112,7 +117,7 @@ export const procesarMensaje = internalAction({
     buttonId: v.optional(v.string()),
   },
   handler: async (ctx, { userId, phone, texto, buttonId }) => {
-    let extraida: Extraida | null = null;
+    let resultado: Resultado | null = null;
 
     // El historial reciente es lo que evita el bucle: si la persona ya dijo
     // "algo deportivo" y ahora responde "esta tarde", el modelo ve las dos
@@ -122,7 +127,7 @@ export const procesarMensaje = internalAction({
     });
 
     try {
-      extraida = await extraerIntencion(historial, texto, buttonId);
+      resultado = await extraerIntencion(historial, texto, buttonId);
     } catch (error) {
       console.error("[bot] falló la extracción:", error);
       await ctx.runAction(internal.whatsapp.enviarTexto, {
@@ -131,6 +136,51 @@ export const procesarMensaje = internalAction({
       });
       return;
     }
+
+    // Preguntó qué hay: respondemos con planes REALES de la base.
+    if (resultado?.tipo === "buscar") {
+      const { enLaZonaPedida, planes } = await ctx.runQuery(
+        internal.plans.buscarParaBot,
+        { zone: resultado.zone, activity: resultado.activity },
+      );
+
+      if (planes.length === 0) {
+        await ctx.runAction(internal.whatsapp.enviarTexto, {
+          phone,
+          texto:
+            "Por ahora no tengo nada armado. Cuéntame qué te provoca y te aviso apenas alguien más se apunte.",
+        });
+        return;
+      }
+
+      const lista = planes
+        .map((p) => {
+          const cuando = new Date(p.startsAt).toLocaleString("es-CO", {
+            weekday: "short",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          const gente =
+            p.cuantosVan > 0
+              ? `${p.cuantosVan} ${p.cuantosVan === 1 ? "va" : "van"}`
+              : "sin nadie aún";
+          return `· ${p.title} — ${p.venue ?? p.zone}, ${cuando} (${gente})`;
+        })
+        .join("\n");
+
+      const encabezado =
+        resultado.zone && !enLaZonaPedida
+          ? `Por ${resultado.zone} no tengo nada todavía, pero mira esto:`
+          : "Esto es lo que hay:";
+
+      await ctx.runAction(internal.whatsapp.enviarTexto, {
+        phone,
+        texto: `${encabezado}\n\n${lista}\n\n¿Te sumo a alguno?`,
+      });
+      return;
+    }
+
+    const extraida = resultado;
 
     // Si el modelo no devolvió nada utilizable, arrancamos por la actividad.
     if (!extraida) {
@@ -211,7 +261,16 @@ function PREGUNTA_ACTIVIDAD(phone: string) {
   };
 }
 
+type Resultado = Extraida | Busqueda;
+
+type Busqueda = {
+  tipo: "buscar";
+  zone?: string;
+  activity?: (typeof ACTIVIDADES)[number];
+};
+
 type Extraida = {
+  tipo?: "registrar";
   activity: (typeof ACTIVIDADES)[number];
   zone: string;
   hoursFromNow: number;
@@ -228,7 +287,7 @@ async function extraerIntencion(
   historial: Array<{ direction: "in" | "out"; body: string }>,
   texto: string,
   buttonId?: string,
-): Promise<Extraida | null> {
+): Promise<Resultado | null> {
   const pista = buttonId ? `\n\n(La persona pulsó el botón: ${buttonId})` : "";
 
   const mensajes = [
@@ -244,6 +303,26 @@ async function extraerIntencion(
     max_tokens: 1024,
     system: SYSTEM,
     tools: [
+      {
+        name: "buscar_planes",
+        description:
+          "Busca planes reales que ya existen, para responder cuando la persona pregunta qué hay por hacer. Devuelve planes de la base de datos, nunca recomendaciones inventadas.",
+        input_schema: {
+          type: "object",
+          properties: {
+            zone: {
+              type: "string",
+              description: "Zona normalizada, si la persona la mencionó.",
+            },
+            activity: {
+              type: "string",
+              enum: [...ACTIVIDADES],
+              description: "Solo si pidió un tipo de plan concreto.",
+            },
+          },
+          required: [],
+        },
+      },
       {
         name: "registrar_intencion",
         description:
@@ -272,12 +351,23 @@ async function extraerIntencion(
         },
       },
     ],
-    tool_choice: { type: "tool", name: "registrar_intencion" },
+    tool_choice: { type: "any" },
     messages: mensajes,
   });
 
   const bloque = response.content.find((b) => b.type === "tool_use");
   if (!bloque || bloque.type !== "tool_use") return null;
+
+  if (bloque.name === "buscar_planes") {
+    const raw = bloque.input as Record<string, unknown>;
+    return {
+      tipo: "buscar" as const,
+      zone: String(raw.zone ?? "").toLowerCase().trim() || undefined,
+      activity: ACTIVIDADES.includes(String(raw.activity) as any)
+        ? (String(raw.activity) as (typeof ACTIVIDADES)[number])
+        : undefined,
+    };
+  }
 
   // El input viene como objeto ya parseado; validamos a mano porque un
   // modelo puede devolver algo fuera del enum aunque el schema lo prohíba.
@@ -289,6 +379,7 @@ async function extraerIntencion(
   const duracion = Number(raw.durationHours);
 
   return {
+    tipo: "registrar" as const,
     activity: act as (typeof ACTIVIDADES)[number],
     zone: String(raw.zone ?? "").toLowerCase().trim() || "centro",
     hoursFromNow: Number.isFinite(horas) ? Math.max(0, Math.min(horas, 24 * 8)) : 0,

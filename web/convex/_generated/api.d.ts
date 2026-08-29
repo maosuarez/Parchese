@@ -14,7 +14,10 @@ import type * as crons from "../crons.js";
 import type * as http from "../http.js";
 import type * as matching from "../matching.js";
 import type * as notify from "../notify.js";
+import type * as plans from "../plans.js";
 import type * as seed from "../seed.js";
+import type * as sources_apify from "../sources/apify.js";
+import type * as sources_normalize from "../sources/normalize.js";
 import type * as trust from "../trust.js";
 import type * as whatsapp from "../whatsapp.js";
 
@@ -31,7 +34,10 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   matching: typeof matching;
   notify: typeof notify;
+  plans: typeof plans;
   seed: typeof seed;
+  "sources/apify": typeof sources_apify;
+  "sources/normalize": typeof sources_normalize;
   trust: typeof trust;
   whatsapp: typeof whatsapp;
 }>;
