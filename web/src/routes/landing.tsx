@@ -6,13 +6,12 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/landing")({
   head: () => ({
     meta: [
-      { title: "Parchese — Trabajar remoto sin vivir aislado" },
+      { title: "Parchese — Planes que sí se arman" },
       {
         name: "description",
-        content:
-          "Parchese convierte pequeños momentos del día en movimiento, compañía y conexiones reales para quienes trabajan remoto y viven solos.",
+        content: "Parchese hace más fácil encontrar un plan público que ya tiene grupo en Bogotá.",
       },
-      { property: "og:title", content: "Parchese — Trabajar remoto sin vivir aislado" },
+      { property: "og:title", content: "Parchese — Planes que sí se arman" },
       {
         property: "og:description",
         content:
@@ -66,7 +65,7 @@ function LandingPage() {
           <span className="font-sans text-lg font-semibold">Parchese</span>
         </span>
         <Button asChild size="sm">
-          <Link to="/">Probar Parchese</Link>
+          <Link to="/">Ver Parchese</Link>
         </Button>
       </header>
 
@@ -79,12 +78,12 @@ function LandingPage() {
             Trabajar remoto <span className="text-gradient-pulse">sin vivir aislado</span>
           </h1>
           <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground">
-            Parchese convierte pequeños momentos del día en movimiento, compañía y conexiones reales.
+            Parchese muestra planes públicos que ya tienen grupo en Bogotá.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild size="lg">
               <Link to="/">
-                Probar Parchese <ArrowRight className="ml-1 size-4" />
+                Ver Parchese <ArrowRight className="ml-1 size-4" />
               </Link>
             </Button>
             <Button asChild size="lg" variant="secondary">
@@ -92,7 +91,7 @@ function LandingPage() {
             </Button>
           </div>
           <p className="mt-8 max-w-xl rounded-3xl border border-border bg-panel/60 p-5 text-sm leading-relaxed text-muted-foreground">
-            “Parchese es el copiloto social de las personas que trabajan remoto y viven solas. Entiende
+            “Parchese es una invitación a encontrar planes públicos que ya tienen un grupo. Entiende
             cuándo necesitas moverte, recargar, trabajar acompañado o ver personas y convierte ese
             momento en una misión real con un pequeño grupo compatible cerca de ti.”
           </p>
@@ -141,13 +140,15 @@ function LandingPage() {
         </section>
 
         <section className="panel-surface mt-8 rounded-4xl p-8 text-center">
-          <h2 className="text-2xl font-semibold">Vivir solo no debería significar sentirse solo.</h2>
+          <h2 className="text-2xl font-semibold">
+            Vivir solo no debería significar sentirse solo.
+          </h2>
           <p className="mx-auto mt-3 max-w-lg text-sm text-muted-foreground">
             Al completar experiencias ganas Pulse Points que puedes usar en beneficios sociales como
             cafés, coworking, bienestar y actividades.
           </p>
           <Button asChild size="lg" className="mt-6">
-            <Link to="/">Probar Parchese</Link>
+            <Link to="/">Ver Parchese</Link>
           </Button>
         </section>
       </main>

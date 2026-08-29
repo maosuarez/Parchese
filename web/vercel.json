@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "tanstack-start",
+  "redirects": [
+    { "source": "/landing", "destination": "/", "permanent": false },
+    { "source": "/map", "destination": "/", "permanent": false },
+    { "source": "/missions", "destination": "/", "permanent": false },
+    { "source": "/profile", "destination": "/", "permanent": false },
+    { "source": "/rewards", "destination": "/", "permanent": false },
+    { "source": "/business", "destination": "/", "permanent": false },
+    { "source": "/favicon.ico", "destination": "/favicon.svg", "permanent": true }
+  ]
+}

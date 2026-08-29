@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Parchese design system — dark mode premium.
+ * Legacy design system. The public projector page uses the scoped Parchese styles below.
  * All colors in oklch. Never hardcode colors in components.
  */
 
@@ -64,12 +64,12 @@
   --color-sidebar-border: var(--border);
   --color-sidebar-ring: var(--ring);
 
-  --font-sans:
-    "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   --font-body: "DM Sans", ui-sans-serif, system-ui, sans-serif;
 
   --shadow-soft: 0 18px 50px -20px oklch(0.05 0.03 250 / 0.9);
-  --shadow-glow-cyan: 0 0 0 1px oklch(0.87 0.13 205 / 0.35), 0 12px 40px -12px oklch(0.87 0.13 205 / 0.35);
+  --shadow-glow-cyan:
+    0 0 0 1px oklch(0.87 0.13 205 / 0.35), 0 12px 40px -12px oklch(0.87 0.13 205 / 0.35);
 
   --animate-pulse-ring: pulse-ring 2.8s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
   --animate-float-slow: float-slow 7s ease-in-out infinite;
@@ -191,11 +191,7 @@
 }
 
 @utility glass {
-  background: linear-gradient(
-    160deg,
-    oklch(0.982 0.008 220 / 0.07),
-    oklch(0.982 0.008 220 / 0.02)
-  );
+  background: linear-gradient(160deg, oklch(0.982 0.008 220 / 0.07), oklch(0.982 0.008 220 / 0.02));
   backdrop-filter: blur(18px) saturate(140%);
   border: 1px solid oklch(0.982 0.008 220 / 0.1);
   box-shadow: var(--shadow-soft);
@@ -218,5 +214,507 @@
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
+  }
+}
+
+/* Parchese projector page. A warm invitation, not an operations dashboard. */
+.parchese-stage {
+  --parchese-paper: #f4ead8;
+  --parchese-paper-light: #fffaf0;
+  --parchese-ink: #2b211b;
+  --parchese-orange: #ef5b2a;
+  --parchese-orange-soft: #f4a17f;
+  --parchese-sage: #77836f;
+  position: relative;
+  height: 100svh;
+  min-height: 640px;
+  overflow: hidden;
+  background: var(--parchese-paper);
+  color: var(--parchese-ink);
+  font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
+.parchese-paper-grain {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 10%, rgb(255 255 255 / 0.45), transparent 32%),
+    radial-gradient(circle at 80% 82%, rgb(157 102 62 / 0.08), transparent 34%),
+    repeating-radial-gradient(circle at 0 0, transparent 0 2px, rgb(43 33 27 / 0.025) 3px 4px);
+  mix-blend-mode: multiply;
+  opacity: 0.75;
+}
+
+.parchese-shell {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: min(100%, 1640px);
+  height: 100%;
+  margin-inline: auto;
+  padding: 16px clamp(24px, 3vw, 54px) 12px;
+}
+
+.parchese-header {
+  display: flex;
+  min-height: 50px;
+  align-items: center;
+  gap: 20px;
+  padding-bottom: 8px;
+}
+
+.parchese-brand-lockup {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 11px;
+}
+
+.parchese-wordmark {
+  font-family: "Newsreader", Georgia, serif;
+  font-size: clamp(2rem, 2.3vw, 2.75rem);
+  font-style: italic;
+  font-weight: 650;
+  line-height: 0.9;
+  letter-spacing: -0.055em;
+}
+
+.parchese-brand-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--parchese-orange);
+}
+
+.parchese-content {
+  display: grid;
+  min-height: 0;
+  grid-template-columns: minmax(0, 1fr) clamp(210px, 18vw, 260px);
+  gap: clamp(18px, 2vw, 28px);
+  padding-block: clamp(12px, 1.7vh, 18px) 8px;
+}
+
+.parchese-invitation {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  grid-template-columns: minmax(0, 1.16fr) minmax(300px, 0.84fr);
+  overflow: hidden;
+  border: 1.5px solid var(--parchese-ink);
+  border-radius: 28px 20px 26px 18px;
+  background: var(--parchese-paper-light);
+  box-shadow: 10px 12px 0 rgb(43 33 27 / 0.12);
+  transform: rotate(-0.18deg);
+}
+
+.parchese-invitation-new {
+  animation: parchese-invitation-placed 1.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.parchese-tape {
+  position: absolute;
+  z-index: 3;
+  top: -4px;
+  left: 44%;
+  width: 112px;
+  height: 29px;
+  border-inline: 1px solid rgb(43 33 27 / 0.08);
+  background: rgb(239 91 42 / 0.3);
+  transform: translateX(-50%) rotate(1.4deg);
+}
+
+.parchese-invitation-copy {
+  z-index: 1;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(34px, 3.9vw, 64px);
+}
+
+.parchese-invitation h1 {
+  max-width: 720px;
+  font-family: "Newsreader", Georgia, serif;
+  font-size: clamp(3rem, 4vw, 4.85rem);
+  font-weight: 560;
+  line-height: 0.91;
+  letter-spacing: -0.05em;
+  text-wrap: balance;
+}
+
+.parchese-invitation h2 {
+  max-width: 650px;
+  margin-top: clamp(34px, 4.4vh, 50px);
+  font-family: "Newsreader", Georgia, serif;
+  font-size: clamp(2.2rem, 2.8vw, 3.4rem);
+  font-weight: 650;
+  line-height: 0.95;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+
+.parchese-plan-meta {
+  margin-top: 12px;
+  color: rgb(43 33 27 / 0.62);
+  font-size: clamp(0.82rem, 0.96vw, 0.98rem);
+  font-weight: 700;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.parchese-join-line {
+  margin-top: clamp(21px, 2.6vh, 28px);
+  font-family: "Newsreader", Georgia, serif;
+  font-size: clamp(1.65rem, 2.25vw, 2.35rem);
+  font-weight: 650;
+  line-height: 1;
+}
+
+.parchese-join-line span {
+  color: var(--parchese-orange);
+  font-style: italic;
+}
+
+.parchese-illustration {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border-left: 1px solid rgb(43 33 27 / 0.28);
+  background: #e8d8bf;
+}
+
+.parchese-illustration::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgb(255 250 240 / 0.22), transparent 22%);
+  content: "";
+  pointer-events: none;
+}
+
+.parchese-illustration img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 53% center;
+}
+
+.parchese-side-notes {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.parchese-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.parchese-notes-stack {
+  display: grid;
+  grid-template-rows: repeat(2, minmax(140px, auto));
+  gap: clamp(14px, 2vh, 20px);
+}
+
+.parchese-note {
+  position: relative;
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  justify-content: center;
+  border: 1px solid rgb(43 33 27 / 0.58);
+  border-radius: 13px 18px 12px 16px;
+  background: rgb(255 250 240 / 0.82);
+  padding: clamp(15px, 1.5vw, 20px);
+  box-shadow: 4px 5px 0 rgb(43 33 27 / 0.09);
+}
+
+.parchese-note:nth-child(2) {
+  transform: rotate(0.35deg);
+}
+
+.parchese-note:nth-child(3) {
+  transform: rotate(-0.28deg);
+}
+
+.parchese-note-topline {
+  color: var(--parchese-orange);
+  font-size: 0.64rem;
+  font-weight: 750;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.parchese-note h3 {
+  margin-top: 9px;
+  font-family: "Newsreader", Georgia, serif;
+  font-size: clamp(1.3rem, 1.55vw, 1.65rem);
+  font-weight: 620;
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.parchese-note-details {
+  margin-top: 14px;
+  color: rgb(43 33 27 / 0.65);
+  font-size: clamp(0.68rem, 0.76vw, 0.76rem);
+  font-weight: 650;
+}
+
+.parchese-note-new {
+  z-index: 2;
+  border-color: var(--parchese-ink);
+  background: var(--parchese-orange);
+  box-shadow: 7px 8px 0 rgb(43 33 27 / 0.18);
+  color: var(--parchese-ink);
+  animation: parchese-note-placed 3.8s cubic-bezier(0.18, 0.8, 0.2, 1) both;
+}
+
+.parchese-note-new .parchese-note-topline,
+.parchese-note-new .parchese-note-details {
+  color: inherit;
+}
+
+.parchese-live-announcement {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@keyframes parchese-note-placed {
+  0% {
+    opacity: 0;
+    transform: translate3d(42px, -34px, 0) rotate(4deg) scale(0.9);
+  }
+  18% {
+    opacity: 1;
+  }
+  38%,
+  76% {
+    transform: translate3d(0, 0, 0) rotate(-0.8deg) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(-0.45deg) scale(1);
+  }
+}
+
+@keyframes parchese-invitation-placed {
+  0% {
+    opacity: 0;
+    transform: translate3d(24px, -20px, 0) rotate(1.1deg) scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(-0.18deg) scale(1);
+  }
+}
+
+@media (max-width: 1099px) {
+  .parchese-stage {
+    height: auto;
+    min-height: 100svh;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .parchese-shell {
+    min-height: 100svh;
+  }
+
+  .parchese-content {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(440px, 1fr) auto;
+  }
+
+  .parchese-invitation {
+    min-height: 440px;
+  }
+
+  .parchese-side-notes {
+    min-height: 132px;
+  }
+
+  .parchese-notes-stack {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: 1fr;
+    gap: 14px;
+  }
+
+  .parchese-note h3 {
+    font-size: clamp(1.25rem, 3vw, 1.65rem);
+  }
+}
+
+@media (max-width: 699px) {
+  .parchese-stage {
+    height: 100svh;
+    min-height: 600px;
+    overflow: hidden;
+  }
+
+  .parchese-shell {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    height: 100%;
+    min-height: 0;
+    padding: 10px 12px 8px;
+  }
+
+  .parchese-header {
+    min-height: 44px;
+    padding-bottom: 4px;
+  }
+
+  .parchese-wordmark {
+    font-size: 1.95rem;
+  }
+
+  .parchese-brand-dot {
+    width: 7px;
+    height: 7px;
+  }
+
+  .parchese-content {
+    display: grid;
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 10px;
+    padding-block: 6px 5px;
+  }
+
+  .parchese-invitation {
+    display: flex;
+    height: 100%;
+    min-height: 0;
+    flex-direction: column;
+    border-radius: 22px 15px 20px 14px;
+    box-shadow: 7px 8px 0 rgb(43 33 27 / 0.11);
+  }
+
+  .parchese-tape {
+    left: 52%;
+  }
+
+  .parchese-invitation-copy {
+    flex: 1;
+    padding: 22px 24px 20px;
+  }
+
+  .parchese-invitation h1 {
+    font-size: clamp(2.3rem, 11vw, 2.6rem);
+  }
+
+  .parchese-invitation h2 {
+    margin-top: 22px;
+    font-size: 1.9rem;
+  }
+
+  .parchese-plan-meta {
+    margin-top: 8px;
+    font-size: 0.68rem;
+    line-height: 1.4;
+  }
+
+  .parchese-join-line {
+    margin-top: 14px;
+    font-size: 1.5rem;
+  }
+
+  .parchese-illustration {
+    height: 150px;
+    min-height: 150px;
+    border-top: 1px solid rgb(43 33 27 / 0.28);
+    border-left: 0;
+  }
+
+  .parchese-side-notes {
+    min-height: 0;
+    margin-top: 0;
+  }
+
+  .parchese-notes-stack {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: 78px;
+    gap: 8px;
+  }
+
+  .parchese-note {
+    min-height: 78px;
+    padding: 10px 11px;
+  }
+
+  .parchese-note-topline {
+    display: none;
+  }
+
+  .parchese-note h3 {
+    display: -webkit-box;
+    overflow: hidden;
+    margin-top: 0;
+    font-size: 1.05rem;
+    line-height: 0.98;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .parchese-note-details {
+    margin-top: 7px;
+    font-size: 0.58rem;
+  }
+}
+
+@media (max-width: 699px) and (max-height: 740px) {
+  .parchese-invitation-copy {
+    padding-block: 18px 16px;
+  }
+
+  .parchese-invitation h1 {
+    font-size: 2.25rem;
+  }
+
+  .parchese-invitation h2 {
+    margin-top: 17px;
+    font-size: 1.75rem;
+  }
+
+  .parchese-join-line {
+    margin-top: 10px;
+    font-size: 1.4rem;
+  }
+
+  .parchese-illustration {
+    height: 120px;
+    min-height: 120px;
+  }
+
+  .parchese-notes-stack {
+    grid-template-rows: 70px;
+  }
+
+  .parchese-note {
+    min-height: 70px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .parchese-invitation-new,
+  .parchese-note-new {
+    animation: none !important;
+    transition: none !important;
   }
 }

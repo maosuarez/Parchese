@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
 import { generateMission, type Mission, type MissionInput } from "@/lib/mission-engine";
@@ -139,8 +132,7 @@ export function PulseProvider({ children }: { children: ReactNode }) {
       });
       return {
         ...prev,
-        mission:
-          mission ??
+        mission: mission ??
           prev.mission ?? {
             event,
             title: event.title,
@@ -178,8 +170,7 @@ export function PulseProvider({ children }: { children: ReactNode }) {
               participant_ids: e.participant_ids.includes("u-eli")
                 ? e.participant_ids
                 : [...e.participant_ids, "u-eli"],
-              status:
-                e.current_participants + 1 >= e.max_participants ? "full" : e.status,
+              status: e.current_participants + 1 >= e.max_participants ? "full" : e.status,
             }
           : e,
       ),

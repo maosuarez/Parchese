@@ -10,13 +10,13 @@ import { currentUser } from "@/mock/data";
 export const Route = createFileRoute("/profile")({
   head: () => ({
     meta: [
-      { title: "Perfil — Move, Connect, Recharge, Grow | Parchese" },
+      { title: "Perfil | Parchese" },
       {
         name: "description",
         content:
           "Tu progreso en las cuatro dimensiones del bienestar remoto, tus Pulse Pods, tu zona frecuente y tus controles de privacidad.",
       },
-      { property: "og:title", content: "Perfil — Tu bienestar remoto en Parchese" },
+      { property: "og:title", content: "Perfil | Parchese" },
       {
         property: "og:description",
         content: "Zona frecuente en lugar de dirección exacta. Bienestar sin vigilancia.",
@@ -80,7 +80,12 @@ function ProfilePage() {
           <SectionTitle eyebrow="Cuatro dimensiones" title="Tu balance de la semana" />
           <div className="flex flex-wrap justify-around gap-4">
             <ProgressRing value={pulse.dimensions.move} label="Move" emoji="🏃" accent="yellow" />
-            <ProgressRing value={pulse.dimensions.connect} label="Connect" emoji="🤝" accent="cyan" />
+            <ProgressRing
+              value={pulse.dimensions.connect}
+              label="Connect"
+              emoji="🤝"
+              accent="cyan"
+            />
             <ProgressRing
               value={pulse.dimensions.recharge}
               label="Recharge"
@@ -117,7 +122,10 @@ function ProfilePage() {
           <SectionTitle eyebrow="Trust & Safety" title="Siempre visible" />
           <div className="grid gap-2 sm:grid-cols-2">
             {safety.map((item) => (
-              <p key={item} className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+              <p
+                key={item}
+                className="inline-flex items-center gap-2 text-xs text-muted-foreground"
+              >
                 <ShieldCheck className="size-3.5 shrink-0 text-mint" /> {item}
               </p>
             ))}

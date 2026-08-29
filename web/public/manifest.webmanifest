@@ -1,0 +1,17 @@
+{
+  "name": "Parchese",
+  "short_name": "Parchese",
+  "description": "Planes públicos que ya se formaron en Bogotá.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4ead8",
+  "theme_color": "#f4ead8",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

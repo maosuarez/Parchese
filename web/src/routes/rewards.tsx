@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/rewards")({
   head: () => ({
     meta: [
-      { title: "Rewards — Canjea Pulse Points en beneficios sociales | Parchese" },
+      { title: "Beneficios | Parchese" },
       {
         name: "description",
         content:
@@ -21,7 +21,8 @@ export const Route = createFileRoute("/rewards")({
       { property: "og:title", content: "Rewards — Beneficios sociales con Pulse Points" },
       {
         property: "og:description",
-        content: "Premiamos consistencia, movimiento y conexiones reales. Nunca likes ni followers.",
+        content:
+          "Premiamos consistencia, movimiento y conexiones reales. Nunca likes ni followers.",
       },
     ],
   }),
@@ -35,7 +36,10 @@ function RewardsPage() {
     <AppShell>
       <div className="space-y-5">
         <section className="relative overflow-hidden rounded-4xl border border-border bg-panel p-6">
-          <div className="absolute -right-12 -top-12 size-44 rounded-full bg-yellow/15 blur-3xl" aria-hidden />
+          <div
+            className="absolute -right-12 -top-12 size-44 rounded-full bg-yellow/15 blur-3xl"
+            aria-hidden
+          />
           <div className="relative">
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
               Tus Pulse Points

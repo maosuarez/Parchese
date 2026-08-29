@@ -8,7 +8,7 @@ import { Progress } from "@/components/ui/progress";
 export const Route = createFileRoute("/business")({
   head: () => ({
     meta: [
-      { title: "Dashboard B2B — Bienestar sin vigilancia | Parchese" },
+      { title: "Equipos | Parchese" },
       {
         name: "description",
         content:
@@ -17,7 +17,8 @@ export const Route = createFileRoute("/business")({
       { property: "og:title", content: "Dashboard B2B — Bienestar sin vigilancia" },
       {
         property: "og:description",
-        content: "Las empresas ven participación agregada. Nunca ubicación, mensajes ni estado emocional.",
+        content:
+          "Las empresas ven participación agregada. Nunca ubicación, mensajes ni estado emocional.",
       },
     ],
   }),
@@ -52,8 +53,10 @@ function BusinessPage() {
     <div className="mx-auto max-w-5xl px-5 py-8">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">Parchese for Teams</h1>
-          <p className="text-xs text-muted-foreground">Demo · datos agregados de un equipo remoto</p>
+          <h1 className="text-2xl font-semibold">Parchese para equipos</h1>
+          <p className="text-xs text-muted-foreground">
+            Demo · datos agregados de un equipo remoto
+          </p>
         </div>
         <Button asChild size="sm" variant="secondary">
           <Link to="/">Volver a la app</Link>
@@ -63,7 +66,9 @@ function BusinessPage() {
       <div className="mt-6 grid gap-3 sm:grid-cols-4">
         {kpis.map((kpi) => (
           <div key={kpi.label} className="panel-surface rounded-3xl p-4">
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{kpi.label}</p>
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+              {kpi.label}
+            </p>
             <p className="mt-1 text-2xl font-semibold">{kpi.value}</p>
           </div>
         ))}

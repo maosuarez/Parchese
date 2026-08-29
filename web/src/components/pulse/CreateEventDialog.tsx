@@ -54,7 +54,7 @@ export function CreateEventDialog({ trigger }: { trigger: ReactNode }) {
       id: `e-${Date.now()}`,
       title: title.trim() || `${categoryMeta[category].label} Session`,
       emoji: categoryMeta[category].emoji,
-      description: description.trim() || "Experiencia creada por un miembro de Parchese.",
+      description: description.trim() || "Experiencia creada por una persona de Parchese.",
       category,
       latitude: venue.latitude,
       longitude: venue.longitude,
@@ -140,15 +140,30 @@ export function CreateEventDialog({ trigger }: { trigger: ReactNode }) {
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="ev-time">Hora</Label>
-              <Input id="ev-time" type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
+              <Input
+                id="ev-time"
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="ev-dur">Duración</Label>
-              <Input id="ev-dur" type="number" value={duration} onChange={(e) => setDuration(e.target.value)} />
+              <Input
+                id="ev-dur"
+                type="number"
+                value={duration}
+                onChange={(e) => setDuration(e.target.value)}
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="ev-max">Máx.</Label>
-              <Input id="ev-max" type="number" value={max} onChange={(e) => setMax(e.target.value)} />
+              <Input
+                id="ev-max"
+                type="number"
+                value={max}
+                onChange={(e) => setMax(e.target.value)}
+              />
             </div>
           </div>
 

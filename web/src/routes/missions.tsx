@@ -17,7 +17,7 @@ import type { TransportMode } from "@/types";
 export const Route = createFileRoute("/missions")({
   head: () => ({
     meta: [
-      { title: "Misiones — Tu grupo, tu ruta, tu check-in | Parchese" },
+      { title: "Planes | Parchese" },
       {
         name: "description",
         content:
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/missions")({
       { property: "og:title", content: "Misiones — Tu grupo, tu ruta, tu check-in" },
       {
         property: "og:description",
-        content: "Parchese forma grupos de 3 a 5 personas y te acompaña hasta el encuentro real.",
+        content: "Parchese muestra planes públicos que ya tienen un grupo formado.",
       },
     ],
   }),
@@ -114,7 +114,8 @@ function MissionsPage() {
                   <UserAvatar user={person} size="sm" />
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium">
-                      {person.name} {id === "u-eli" && <span className="text-muted-foreground">· Tú</span>}
+                      {person.name}{" "}
+                      {id === "u-eli" && <span className="text-muted-foreground">· Tú</span>}
                     </p>
                     <p className="truncate text-[11px] text-muted-foreground">{person.role}</p>
                   </div>
@@ -148,7 +149,7 @@ function MissionsPage() {
 
         <section className="panel-surface rounded-4xl p-5">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-violet">
-            🎙️ Parchese Social Facilitator
+            Facilitación de Parchese
           </p>
           <p className="mt-2 text-sm leading-relaxed">“{icebreakers[0]}”</p>
           <div className="mt-3 space-y-1.5">
@@ -209,7 +210,10 @@ function MissionsPage() {
         </section>
 
         <section className="panel-surface rounded-4xl p-5">
-          <SectionTitle eyebrow="Check-in" title={`${checkedCount} / ${roster.length} en el lugar`} />
+          <SectionTitle
+            eyebrow="Check-in"
+            title={`${checkedCount} / ${roster.length} en el lugar`}
+          />
           {!pulse.checkedIn ? (
             <div className="space-y-3">
               <div className="flex items-center gap-3 rounded-3xl border border-border bg-background/40 p-4">
