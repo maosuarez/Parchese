@@ -1,5 +1,7 @@
 # Dev C — La cara visible
 
+**Dueño: Mao**
+
 > Tu entrega: **que un plan creado en Convex aparezca solo en pantalla, sin recargar.**
 > Eso es lo que el jurado va a ver. Sin esto no hay demo.
 

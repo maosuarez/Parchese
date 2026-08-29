@@ -1,5 +1,7 @@
 # Dev B — El núcleo
 
+**Dueño: Luis**
+
 > Tu entrega: **que dos intenciones compatibles produzcan un plan.**
 > Esto es el wow moment del pitch. Es lo único que no se corta nunca.
 

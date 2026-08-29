@@ -1,6 +1,6 @@
 # Tareas — Match de intenciones
 
-Dueño: **Dev B**. Trozos de máximo 2 horas, verificables por separado.
+Dueño: **Luis** (Dev B). Trozos de máximo 2 horas, verificables por separado.
 
 ---
 

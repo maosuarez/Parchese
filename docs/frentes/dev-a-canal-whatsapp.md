@@ -1,5 +1,7 @@
 # Dev A — El canal de WhatsApp
 
+**Dueño: Hugo**
+
 > Tu entrega: **que escribirle al bot cree una fila en `intents`.**
 > Si eso funciona, cumpliste. Todo lo demás es mejora.
 

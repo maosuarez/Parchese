@@ -48,11 +48,11 @@ Si aparece una fila en `plans`, el núcleo funciona. Ese es el corazón del prod
 
 ### 4. Lee tu frente
 
-| Eres | Lee |
-|---|---|
-| **Dev A** | [`docs/frentes/dev-a-canal-whatsapp.md`](frentes/dev-a-canal-whatsapp.md) — el bot |
-| **Dev B** | [`docs/frentes/dev-b-nucleo.md`](frentes/dev-b-nucleo.md) — el match y la confianza |
-| **Dev C** | [`docs/frentes/dev-c-cara-visible.md`](frentes/dev-c-cara-visible.md) — la web y el índice |
+| Dev | Quién | Frente | Entrega |
+|---|---|---|---|
+| **A** | Hugo | [El canal de WhatsApp](frentes/dev-a-canal-whatsapp.md) | Que escribirle al bot cree una fila en `intents` |
+| **B** | Luis | [El núcleo](frentes/dev-b-nucleo.md) | Que dos intenciones compatibles produzcan un plan |
+| **C** | Mao | [La cara visible](frentes/dev-c-cara-visible.md) | Que un plan aparezca solo en pantalla, sin recargar |
 
 Cada documento dice: qué archivos son tuyos, qué entregas, qué **no** puedes tocar, y cómo avanzar sin esperar a nadie.
 

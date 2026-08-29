@@ -8,7 +8,7 @@ convex/matching.ts    el match, el vencimiento
 convex/crons.ts       el disparo periódico del vencimiento
 ```
 
-Dueño: **Dev B**. Ver `docs/frentes/dev-b-nucleo.md`.
+Dueño: **Luis** (Dev B). Ver `docs/frentes/dev-b-nucleo.md`.
 
 ## Decisión central: el match es una mutation, no una action
 
