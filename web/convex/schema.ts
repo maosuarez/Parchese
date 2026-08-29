@@ -170,7 +170,10 @@ export default defineSchema({
     ),
     planId: v.optional(v.id("plans")),
   })
-    .index("by_status", ["status"]),
+    .index("by_status", ["status"])
+    // Idempotencia de la ingesta de Apify: mismo evento en corridas
+    // consecutivas del Actor no se re-inserta. Ver design.md, decisión 4.
+    .index("by_external", ["externalId"]),
 
   /**
    * Los "¿alguien va?" de redes. Tabla aparte a propósito: son señal de

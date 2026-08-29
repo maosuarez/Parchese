@@ -83,6 +83,118 @@ http.route({
   }),
 });
 
+// Puerta B — ingesta del índice de la ciudad vía Webhook de Apify.
+// Spec: openspec/changes/ingesta-apify-eventos/specs/apify-ingest/spec.md
+//
+// URL a registrar en el Actor/Tarea de Apify (Webhooks → Add webhook):
+//   https://<deployment>.convex.site/webhook/apify?token=<APIFY_WEBHOOK_SECRET>
+// El secreto también se acepta como header Authorization: Bearer <secreto>.
+//
+// La regla del canal crítico: aquí NO se llama al LLM ni se descarga el
+// dataset. Se valida el secreto, se agenda y se responde 200 de inmediato —
+// Apify corta el webhook a los pocos segundos y reintenta si no.
+http.route({
+  path: "/webhook/apify",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    if (!secretoApifyValido(request)) {
+      return new Response("No autorizado", { status: 401 });
+    }
+
+    const raw = await request.text();
+    let payload: unknown;
+    try {
+      payload = JSON.parse(raw);
+    } catch {
+      // Ilegible: 200 para que Apify no reintente en bucle algo inservible.
+      return new Response(null, { status: 200 });
+    }
+
+    const lote = interpretarPayloadApify(payload);
+    if (lote.kind === "items") {
+      await ctx.scheduler.runAfter(0, internal.sources.apify.ingestarLoteApify, {
+        platform: lote.platform,
+        canal: lote.canal,
+        items: lote.items,
+      });
+    } else if (lote.kind === "dataset") {
+      await ctx.scheduler.runAfter(0, internal.sources.apify.descargarDataset, {
+        platform: lote.platform,
+        canal: lote.canal,
+        datasetId: lote.datasetId,
+      });
+    }
+    // Si no hay nada accionable igual devolvemos 200: el webhook llegó bien,
+    // simplemente no traía items ni dataset.
+
+    return new Response(null, { status: 200 });
+  }),
+});
+
+/**
+ * El secreto se acepta por query (`?token=`) o por header
+ * (`Authorization: Bearer …`). Sin `APIFY_WEBHOOK_SECRET` en el entorno no se
+ * acepta nada: fallar cerrado, igual que el webhook de WhatsApp.
+ */
+function secretoApifyValido(request: Request): boolean {
+  const secret = process.env.APIFY_WEBHOOK_SECRET;
+  if (!secret) {
+    console.error("[webhook] falta APIFY_WEBHOOK_SECRET");
+    return false;
+  }
+  const url = new URL(request.url);
+  const enQuery = url.searchParams.get("token");
+  const header = request.headers.get("authorization") ?? "";
+  const enHeader = header.toLowerCase().startsWith("bearer ")
+    ? header.slice(7).trim()
+    : header.trim();
+  const recibido = enQuery ?? enHeader;
+  if (!recibido) return false;
+  return comparacionSegura(recibido, secret);
+}
+
+type LoteApify =
+  | { kind: "items"; platform: string; canal: CanalApify; items: unknown[] }
+  | { kind: "dataset"; platform: string; canal: CanalApify; datasetId: string }
+  | { kind: "vacio" };
+
+type CanalApify = "oferta" | "demanda";
+
+/**
+ * Dos formas de payload (design.md, decisión 2):
+ *   1. Lote directo: `{ items: [...] }` para corridas ligeras.
+ *   2. Referencia a dataset: `{ resource: { defaultDatasetId } }` — la acción
+ *      lo descarga desde la API de Apify si el lote es grande.
+ *
+ * `platform` (luma/eventbrite/maps/instagram…) y `canal` (oferta vs demanda)
+ * se leen del nivel superior del payload; se rellenan con la plantilla de
+ * payload del webhook en Apify. Por defecto: plataforma desconocida, oferta.
+ */
+function interpretarPayloadApify(payload: unknown): LoteApify {
+  if (typeof payload !== "object" || payload === null) return { kind: "vacio" };
+  const p = payload as Record<string, unknown>;
+
+  const platform =
+    typeof p.platform === "string" && p.platform.trim()
+      ? p.platform.trim().toLowerCase()
+      : "desconocido";
+  const canal: CanalApify = p.canal === "demanda" ? "demanda" : "oferta";
+
+  if (Array.isArray(p.items)) {
+    return { kind: "items", platform, canal, items: p.items };
+  }
+
+  const resource = p.resource;
+  if (typeof resource === "object" && resource !== null) {
+    const datasetId = (resource as Record<string, unknown>).defaultDatasetId;
+    if (typeof datasetId === "string" && datasetId) {
+      return { kind: "dataset", platform, canal, datasetId };
+    }
+  }
+
+  return { kind: "vacio" };
+}
+
 /** HMAC-SHA256 hex del cuerpo crudo, comparado en tiempo constante. */
 async function firmaValida(
   raw: string,
