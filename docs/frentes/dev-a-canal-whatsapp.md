@@ -186,3 +186,31 @@ Si van con Twilio: **el cartel del QR tiene que decir que hay que mandar el `joi
 - **Si una intención vence sin match, no mandes nada.** Avisar que nadie coincidió rompe la invisibilidad del rechazo, que es el mecanismo central del producto.
 
 Contexto completo en `docs/01-definicion-producto.md`.
+
+---
+
+## Verificado en vivo (2026-08-29)
+
+| Pieza | Estado |
+|---|---|
+| API key de Kapso | ✅ |
+| Número sandbox `597907523413541` | ✅ activo |
+| Envío de texto | ✅ |
+| Botones interactivos | ✅ |
+| MiniMax por endpoint compatible con Anthropic | ✅ |
+| Extracción de intención | ✅ 8/10 casos |
+
+**Jerga colombiana:** el modelo resuelve bien "tinto", "pichanga", "parqués", y normaliza "la 93" → `chico`.
+
+**Gotcha encontrado:** MiniMax **no siempre respeta `tool_choice` forzado**. Con saludos ("hola", "qué hay para hacer") devuelve `end_turn` con texto normal en vez de llamar la herramienta. El código lo maneja: sin `tool_use` se devuelve `null` y se cae a la rama de botones, que es el comportamiento correcto. **No lo "arregles" asumiendo que siempre habrá `tool_use`.**
+
+**Latencia:** 1.7–3s en casos claros, hasta 7s en ambiguos (el modelo razona más). Aceptable para WhatsApp.
+
+### Probar la extracción sin desplegar nada
+
+```bash
+cd web
+MINIMAX_API_KEY=tu_key node scripts/probar-intencion.mjs
+```
+
+Corre 10 frases reales contra el modelo y muestra qué extrajo, con latencia y tokens.
