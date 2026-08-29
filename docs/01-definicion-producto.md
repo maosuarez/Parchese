@@ -1,4 +1,4 @@
-# PulseUp — Definición de producto
+# Parchese — Definición de producto
 
 > Documento fuente. Si algo en el código contradice esto, el código está mal.
 > Última revisión: 2026-08-29
@@ -46,7 +46,7 @@ Y aunque encuentre el plan, queda la parte difícil: **el costo social de ir sol
 
 ## La propuesta
 
-**PulseUp es el repositorio de los planes de la ciudad, con dos puertas de entrada.**
+**Parchese es el repositorio de los planes de la ciudad, con dos puertas de entrada.**
 
 No son dos canales por indecisión: son **dos estados mentales distintos**.
 
@@ -121,9 +121,9 @@ Cosas que **no** se construyen, y por qué.
 
 ## Cómo nos diferenciamos
 
-**Luma es una herramienta para que un organizador gestione la audiencia que ya tiene. PulseUp es descubrimiento para quien no tiene ninguna.** Son categorías distintas aunque ambos muestren eventos.
+**Luma es una herramienta para que un organizador gestione la audiencia que ya tiene. Parchese es descubrimiento para quien no tiene ninguna.** Son categorías distintas aunque ambos muestren eventos.
 
-**Meetup** captura membresía. PulseUp captura **intención**: dices qué quieres hacer hoy y eso basta.
+**Meetup** captura membresía. Parchese captura **intención**: dices qué quieres hacer hoy y eso basta.
 
 **Tinder y Bumble** conectan desconocidos directamente y no se enteran de qué pasó después. Nosotros dejamos rastro — ver el documento de confianza.
 

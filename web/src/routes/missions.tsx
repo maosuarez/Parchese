@@ -17,7 +17,7 @@ import type { TransportMode } from "@/types";
 export const Route = createFileRoute("/missions")({
   head: () => ({
     meta: [
-      { title: "Misiones — Tu grupo, tu ruta, tu check-in | PulseUp" },
+      { title: "Misiones — Tu grupo, tu ruta, tu check-in | Parchese" },
       {
         name: "description",
         content:
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/missions")({
       { property: "og:title", content: "Misiones — Tu grupo, tu ruta, tu check-in" },
       {
         property: "og:description",
-        content: "PulseUp forma grupos de 3 a 5 personas y te acompaña hasta el encuentro real.",
+        content: "Parchese forma grupos de 3 a 5 personas y te acompaña hasta el encuentro real.",
       },
     ],
   }),
@@ -148,7 +148,7 @@ function MissionsPage() {
 
         <section className="panel-surface rounded-4xl p-5">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-violet">
-            🎙️ PulseUp Social Facilitator
+            🎙️ Parchese Social Facilitator
           </p>
           <p className="mt-2 text-sm leading-relaxed">“{icebreakers[0]}”</p>
           <div className="mt-3 space-y-1.5">

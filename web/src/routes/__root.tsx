@@ -80,14 +80,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { name: "theme-color", content: "#06101D" },
-      { title: "PulseUp — Copiloto social para quien trabaja remoto" },
+      { title: "Parchese — Copiloto social para quien trabaja remoto" },
       {
         name: "description",
         content:
-          "PulseUp convierte tu necesidad de hoy en una experiencia presencial con un grupo pequeño y compatible cerca de ti.",
+          "Parchese convierte tu necesidad de hoy en una experiencia presencial con un grupo pequeño y compatible cerca de ti.",
       },
-      { name: "author", content: "PulseUp" },
-      { property: "og:title", content: "PulseUp — Copiloto social para quien trabaja remoto" },
+      { name: "author", content: "Parchese" },
+      { property: "og:title", content: "Parchese — Copiloto social para quien trabaja remoto" },
       {
         property: "og:description",
         content: "Vivir solo no debería significar sentirse solo.",

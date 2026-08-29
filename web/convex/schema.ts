@@ -1,7 +1,7 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
-// PulseUp — el contrato compartido entre los tres frentes.
+// Parchese — el contrato compartido entre los tres frentes.
 //
 // Este archivo se define entre los tres en la primera hora y después se
 // congela. Si necesitas cambiarlo, dilo en voz alta: un cambio silencioso
@@ -97,6 +97,18 @@ export default defineSchema({
     ),
     organizerId: v.optional(v.id("organizers")),
     sourceUrl: v.optional(v.string()), // si vino del índice, de dónde
+    // Token por plan, generado al crear con crypto.randomUUID(). Sin este
+    // token no hay check-in: es lo que impide marcar asistencia por autoreporte.
+    qrToken: v.string(),
+    // pending: aún no cumple aforo · active: en pie · completed: ya cerró ·
+    // cancelled: se canceló antes de tiempo.
+    status: v.union(
+      v.literal("pending"),
+      v.literal("active"),
+      v.literal("completed"),
+      v.literal("cancelled"),
+    ),
+    activatedAt: v.optional(v.number()), // ms — cuándo pasó a active
   })
     .index("by_time", ["startsAt", "zone"])
     .index("by_visible", ["requiredTrustLevel", "startsAt"]),

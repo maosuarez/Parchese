@@ -25,7 +25,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <span className="grid size-9 place-items-center rounded-2xl bg-cyan/15 text-cyan">
             <Zap className="size-4" />
           </span>
-          <span className="font-sans text-lg font-semibold tracking-tight">PulseUp</span>
+          <span className="font-sans text-lg font-semibold tracking-tight">Parchese</span>
         </Link>
         <nav className="space-y-1">
           {nav.map(({ to, label, Icon }) => {
@@ -69,7 +69,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <span className="grid size-8 place-items-center rounded-xl bg-cyan/15 text-cyan">
               <Zap className="size-4" />
             </span>
-            <span className="font-sans text-base font-semibold">PulseUp</span>
+            <span className="font-sans text-base font-semibold">Parchese</span>
           </Link>
           <p className="hidden text-sm text-muted-foreground lg:block">
             Copiloto social · {new Date().toLocaleDateString("es-CO", { weekday: "long" })}

@@ -15,17 +15,17 @@ import { currentUser } from "@/mock/data";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "PulseUp — Copiloto social para quien trabaja remoto" },
+      { title: "Parchese — Copiloto social para quien trabaja remoto" },
       {
         name: "description",
         content:
-          "PulseUp convierte tu necesidad de hoy en una misión real: café, caminata o cowork con un grupo pequeño y compatible cerca de ti.",
+          "Parchese convierte tu necesidad de hoy en una misión real: café, caminata o cowork con un grupo pequeño y compatible cerca de ti.",
       },
-      { property: "og:title", content: "PulseUp — Copiloto social para quien trabaja remoto" },
+      { property: "og:title", content: "Parchese — Copiloto social para quien trabaja remoto" },
       {
         property: "og:description",
         content:
-          "Vivir solo no debería significar sentirse solo. Elige qué necesitas hoy y PulseUp encuentra una experiencia presencial cerca.",
+          "Vivir solo no debería significar sentirse solo. Elige qué necesitas hoy y Parchese encuentra una experiencia presencial cerca.",
       },
     ],
   }),

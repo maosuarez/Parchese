@@ -10,13 +10,13 @@ import { currentUser } from "@/mock/data";
 export const Route = createFileRoute("/profile")({
   head: () => ({
     meta: [
-      { title: "Perfil — Move, Connect, Recharge, Grow | PulseUp" },
+      { title: "Perfil — Move, Connect, Recharge, Grow | Parchese" },
       {
         name: "description",
         content:
           "Tu progreso en las cuatro dimensiones del bienestar remoto, tus Pulse Pods, tu zona frecuente y tus controles de privacidad.",
       },
-      { property: "og:title", content: "Perfil — Tu bienestar remoto en PulseUp" },
+      { property: "og:title", content: "Perfil — Tu bienestar remoto en Parchese" },
       {
         property: "og:description",
         content: "Zona frecuente en lugar de dirección exacta. Bienestar sin vigilancia.",

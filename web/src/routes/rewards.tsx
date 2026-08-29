@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/rewards")({
   head: () => ({
     meta: [
-      { title: "Rewards — Canjea Pulse Points en beneficios sociales | PulseUp" },
+      { title: "Rewards — Canjea Pulse Points en beneficios sociales | Parchese" },
       {
         name: "description",
         content:

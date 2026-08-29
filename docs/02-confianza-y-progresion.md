@@ -65,7 +65,7 @@ Si la persona quiere, con un botón habilita su perfil extendido — redes socia
 
 Tinder y Bumble conectan desconocidos directamente y **no se enteran de qué pasó después**. No hay rastro de quién se vio con quién, ni consecuencia para quien se comporta mal.
 
-PulseUp sí lo tiene:
+Parchese sí lo tiene:
 - Queda registro de quién estuvo en qué plan.
 - El acceso a lo íntimo depende de ese registro.
 - Un reporte tiene efecto real sobre el nivel de acceso.

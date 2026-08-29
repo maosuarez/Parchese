@@ -23,7 +23,7 @@ import type { PulseEvent } from "@/types";
 export const Route = createFileRoute("/map")({
   head: () => ({
     meta: [
-      { title: "Pulse Map — Qué está pasando cerca de ti | PulseUp" },
+      { title: "Pulse Map — Qué está pasando cerca de ti | Parchese" },
       {
         name: "description",
         content:

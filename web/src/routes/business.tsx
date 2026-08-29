@@ -8,7 +8,7 @@ import { Progress } from "@/components/ui/progress";
 export const Route = createFileRoute("/business")({
   head: () => ({
     meta: [
-      { title: "Dashboard B2B — Bienestar sin vigilancia | PulseUp" },
+      { title: "Dashboard B2B — Bienestar sin vigilancia | Parchese" },
       {
         name: "description",
         content:
@@ -52,7 +52,7 @@ function BusinessPage() {
     <div className="mx-auto max-w-5xl px-5 py-8">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">PulseUp for Teams</h1>
+          <h1 className="text-2xl font-semibold">Parchese for Teams</h1>
           <p className="text-xs text-muted-foreground">Demo · datos agregados de un equipo remoto</p>
         </div>
         <Button asChild size="sm" variant="secondary">

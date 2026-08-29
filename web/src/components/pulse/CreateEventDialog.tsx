@@ -54,7 +54,7 @@ export function CreateEventDialog({ trigger }: { trigger: ReactNode }) {
       id: `e-${Date.now()}`,
       title: title.trim() || `${categoryMeta[category].label} Session`,
       emoji: categoryMeta[category].emoji,
-      description: description.trim() || "Experiencia creada por un miembro de PulseUp.",
+      description: description.trim() || "Experiencia creada por un miembro de Parchese.",
       category,
       latitude: venue.latitude,
       longitude: venue.longitude,

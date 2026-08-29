@@ -14,6 +14,16 @@ crons.interval(
   {},
 );
 
+// Cerrar planes cuya ventana ya terminó: marca noShow a quien confirmó y no
+// escaneó el QR, y le baja el score. Igual que el vencimiento de intenciones,
+// cinco minutos de retraso no tienen efecto observable.
+crons.interval(
+  "cerrarPlanesVencidos",
+  { minutes: 5 },
+  internal.trust.cerrarPlanesVencidos,
+  {},
+);
+
 // PENDIENTE — el empujón de las 7pm.
 // Requiere una plantilla aprobada por Meta (tarda hasta 24h en aprobarse) para
 // los usuarios fuera de la ventana de servicio de 24 horas. No sirve para el

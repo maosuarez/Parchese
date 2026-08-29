@@ -162,7 +162,7 @@ export function PulseProvider({ children }: { children: ReactNode }) {
           { id: "c2", authorId: "u-mateo", text: "Estoy a 10 minutos." },
           {
             id: "c3",
-            authorId: "pulseup",
+            authorId: "parchese",
             text: "Recuerden que el encuentro es en un lugar público.",
             system: true,
           },

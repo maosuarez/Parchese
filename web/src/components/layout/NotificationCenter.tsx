@@ -45,7 +45,7 @@ export function NotificationCenter() {
         </div>
         <div className="border-t border-border p-3">
           <p className="text-[11px] leading-relaxed text-muted-foreground">
-            ¿Quieres que PulseUp te avise cuando aparezca algo interesante cerca?
+            ¿Quieres que Parchese te avise cuando aparezca algo interesante cerca?
           </p>
           <div className="mt-2 flex items-center justify-between">
             <span className="text-xs font-medium">Activar avisos</span>

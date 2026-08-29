@@ -7,7 +7,7 @@
 
 ## El principio
 
-Airbnb tocó puertas. Stripe le instalaba el producto al cliente ahí mismo («Collison installation»). La primera versión de PulseUp debería **operarse a mano**.
+Airbnb tocó puertas. Stripe le instalaba el producto al cliente ahí mismo («Collison installation»). La primera versión de Parchese debería **operarse a mano**.
 
 **El bot se programa cuando ya se sepa qué preguntar — y eso solo se aprende preguntando.**
 
