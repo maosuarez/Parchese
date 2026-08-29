@@ -228,6 +228,11 @@ export const sembrarPlanes = internalMutation({
         minPeople: 3, // nivel 1: mínimo tres, nunca dos desconocidos solos
         requiredTrustLevel: 1,
         origin: "seeded",
+        qrToken: crypto.randomUUID(),
+        // Sembrados nacen "active": son planes reales que ya ocurren en la
+        // ciudad, no dependen de que se llene un aforo.
+        status: "active",
+        activatedAt: Date.now(),
       });
       creados++;
     }
