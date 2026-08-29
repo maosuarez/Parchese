@@ -18,9 +18,28 @@ const client = new Anthropic({
 const MODELO = process.env.MINIMAX_MODEL ?? "MiniMax-M2.5";
 const ACTIVIDADES = ["caminar", "cafe", "cowork", "juego", "cancha", "otro"];
 
-const SYSTEM = `Eres el asistente de PulseUp, que ayuda a la gente en Bogotá a encontrar con quién hacer un plan hoy.
+const SYSTEM = `Eres el asistente de PulseUp, que ayuda a la gente en Bogotá a encontrar CON QUIÉN hacer un plan hoy.
 
-Tu único trabajo es leer lo que la persona escribe y llamar a la herramienta registrar_intencion con lo que entendiste.
+## Qué te hace distinto (esto define cómo respondes)
+
+Cualquier chatbot puede listar bares y parques de Bogotá. Tú no haces eso.
+Tú sabes algo que ningún otro asistente sabe: QUIÉN MÁS quiere hacer lo mismo,
+cerca, en este momento. Esa es la única razón por la que alguien te escribe.
+
+Reglas que salen de ahí, y no se rompen:
+- NUNCA recomiendes lugares, bares, restaurantes ni eventos de tu conocimiento
+  general. No eres un buscador. Si no está en la base de datos, no existe.
+- Responde con GENTE, no con sitios. "Hay 3 personas que quieren lo mismo por
+  Chapinero entre 7 y 9" vale más que cualquier lista de lugares.
+- Si no hay nadie todavía, dilo derecho y ofrece avisar. Eso es una promesa
+  cumplible, no un fracaso. Nunca rellenes con recomendaciones genéricas para
+  parecer útil.
+- No inventes cuánta gente hay. Ese número lo pone el sistema, no tú.
+
+## Tu trabajo
+
+Lee lo que la persona escribe y llama a la herramienta registrar_intencion con
+lo que entendiste.
 
 Actividades posibles:
 - caminar: caminata, salir a andar, trote suave, sacar el perro
@@ -30,11 +49,22 @@ Actividades posibles:
 - cancha: fútbol, básquet, tenis, pádel, cualquier deporte de cancha
 - otro: cualquier plan que no encaje arriba
 
-Zonas de Bogotá: chapinero, usaquen, suba, teusaquillo, centro, chico, cedritos, kennedy, engativa, fontibon, candelaria, norte, sur, occidente. Normaliza sin tildes y en minúscula. "El norte" es norte. "La 93" o "zona T" es chico.
+Zonas de Bogotá: chapinero, usaquen, suba, teusaquillo, centro, chico, cedritos, kennedy, engativa, fontibon, candelaria, chapinero_alto, salitre, modelia, galerias, norte, sur, occidente.
+Normaliza sin tildes y en minúscula. Referencias comunes:
+- "la 93", "zona T", "zona rosa", "parque de la 93" → chico
+- "corferias", "salitre", "el campin", "simon bolivar" → salitre
+- "la candelaria", "centro historico" → candelaria
+- "el norte" → norte · "el sur" → sur · "usaquen", "la 116" → usaquen
+- "galerias", "la 53" → galerias
 
-Reglas:
-- Si no entiendes la actividad, la zona o cuándo quiere, pon confident en false. NUNCA inventes.
-- Si no dice duración, asume 2 horas.
+Reglas de extracción — LEE ESTO CON CUIDADO:
+- Rescata SIEMPRE lo que sí entendiste. Nunca descartes todo por un dato faltante.
+- En "missing" pon SOLO lo que la persona no dijo ni se puede inferir: "activity", "zone" o "time".
+- Si dice algo genérico como "algo activo", "deportivo", "quemar energía" → activity es cancha.
+  "Algo tranquilo", "relajado", "charlar" → cafe. "Salir a andar", "tomar aire" → caminar.
+- Si nombra un lugar o barrio, deduce la zona. Solo pon "zone" en missing si no dijo NADA de ubicación.
+- Si dice "hoy" sin hora, eso NO alcanza: pon "time" en missing.
+- Si no dice duración, asume 2 horas. Eso nunca va en missing.
 - Si dice "ahora" o "ya", hoursFromNow es 0. "Más tarde" o "esta tarde" es 3. "En la noche" es 5.
 - Nunca menciones salud, sedentarismo, ejercicio como obligación, ni sugieras que la persona debería moverse o salir más. Ni una palabra sobre eso.
 - Escribe en español de Colombia, cercano y breve. Sin emojis en exceso.`;
@@ -42,7 +72,7 @@ Reglas:
 const TOOL = {
   name: "registrar_intencion",
   description:
-    "Registra lo que la persona quiere hacer. Llama siempre a esta herramienta, incluso cuando no estés seguro (con confident en false).",
+    "Registra lo que la persona quiere hacer. Llama SIEMPRE a esta herramienta, aunque falten datos: rescata lo que entendiste y lista lo que falta en missing.",
   input_schema: {
     type: "object",
     properties: {
@@ -50,9 +80,13 @@ const TOOL = {
       zone: { type: "string" },
       hoursFromNow: { type: "number" },
       durationHours: { type: "number" },
-      confident: { type: "boolean" },
+      missing: {
+        type: "array",
+        items: { type: "string", enum: ["activity", "zone", "time"] },
+        description: "Solo los datos que la persona NO dijo y no se pueden inferir.",
+      },
     },
-    required: ["activity", "zone", "hoursFromNow", "durationHours", "confident"],
+    required: ["activity", "zone", "hoursFromNow", "durationHours", "missing"],
   },
 };
 
@@ -63,6 +97,8 @@ let quienSoy = "tu";
 const solapan = (a, b) =>
   a.windowStart < b.windowEnd && b.windowStart < a.windowEnd;
 
+const historial = [];
+
 async function extraer(texto) {
   const res = await client.messages.create({
     model: MODELO,
@@ -70,13 +106,27 @@ async function extraer(texto) {
     system: SYSTEM,
     tools: [TOOL],
     tool_choice: { type: "tool", name: "registrar_intencion" },
-    messages: [{ role: "user", content: texto }],
+    messages: [...historial, { role: "user", content: texto }],
   });
   const b = res.content.find((x) => x.type === "tool_use");
   return b ? b.input : null; // MiniMax a veces ignora tool_choice — ver docs
 }
 
-const rl = readline.createInterface({ input: stdin, output: stdout });
+const guion = process.argv.slice(2);
+const rl = guion.length
+  ? null
+  : readline.createInterface({ input: stdin, output: stdout });
+let paso = 0;
+
+async function preguntar(prompt) {
+  if (!rl) {
+    if (paso >= guion.length) return "/salir";
+    const linea = guion[paso++];
+    console.log(`${prompt}${linea}`);
+    return linea;
+  }
+  return rl.question(prompt);
+}
 
 console.log(`
   PulseUp · chat local          modelo: ${MODELO}
@@ -88,7 +138,7 @@ console.log(`
 `);
 
 while (true) {
-  const texto = (await rl.question(`${quienSoy} › `)).trim();
+  const texto = (await preguntar(`${quienSoy} › `)).trim();
   if (!texto) continue;
 
   if (texto === "/salir") break;
@@ -114,9 +164,30 @@ while (true) {
     continue;
   }
 
-  if (!i || !i.confident) {
-    console.log(`   bot › ¿Qué te provoca hacer hoy?`);
-    console.log(`         [ Caminar ]  [ Un café ]  [ Trabajar cerca ]\n`);
+  historial.push({ role: "user", content: texto });
+
+  const falta = i?.missing ?? ["activity"];
+
+  if (!i || falta.includes("activity")) {
+    const r = "¿Qué te provoca hacer hoy?";
+    console.log(`   bot › ${r}`);
+    console.log(`         [ Algo deportivo ]  [ Un café ]  [ Caminar ]\n`);
+    historial.push({ role: "assistant", content: r });
+    continue;
+  }
+
+  if (falta.includes("time")) {
+    const r = `Listo, ${i.activity}. ¿Para cuándo?`;
+    console.log(`   bot › ${r}`);
+    console.log(`         [ Ahora ]  [ Esta tarde ]  [ En la noche ]\n`);
+    historial.push({ role: "assistant", content: r });
+    continue;
+  }
+
+  if (falta.includes("zone")) {
+    const r = "¿Por qué zona te queda bien?";
+    console.log(`   bot › ${r}\n`);
+    historial.push({ role: "assistant", content: r });
     continue;
   }
 
@@ -155,4 +226,4 @@ while (true) {
   }
 }
 
-rl.close();
+rl?.close();
