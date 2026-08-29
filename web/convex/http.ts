@@ -2,86 +2,70 @@ import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 
-// Puerta A — entrada de WhatsApp.
+// Puerta A — entrada de WhatsApp vía Kapso.
 // Spec: openspec/changes/canal-whatsapp-ingesta/specs/whatsapp-ingest/spec.md
 //
-// URL del webhook: https://<deployment>.convex.site/webhook/whatsapp
+// URL a registrar en Kapso (WhatsApp → el número → Edit → webhook):
+//   https://<deployment>.convex.site/webhook/whatsapp
 // Ojo: .convex.site, NO .convex.cloud (ese es para queries y mutations).
+//
+// Kapso NO es el formato crudo de Meta. Diferencias que importan:
+//   · firma en X-Webhook-Signature, hex puro, sin prefijo "sha256="
+//   · no hay verificación por hub.challenge (eso es de Meta directo)
+//   · el payload es plano: message.from, message.text.body
+//   · hay que responder 200 en menos de 10 segundos
+//   · trae X-Idempotency-Key para deduplicar reintentos
 
 const http = httpRouter();
 
-/**
- * Verificación de suscripción de Meta.
- * Responde el hub.challenge en texto plano si el token coincide.
- */
-http.route({
-  path: "/webhook/whatsapp",
-  method: "GET",
-  handler: httpAction(async (_ctx, request) => {
-    const url = new URL(request.url);
-    const mode = url.searchParams.get("hub.mode");
-    const token = url.searchParams.get("hub.verify_token");
-    const challenge = url.searchParams.get("hub.challenge");
-
-    if (mode === "subscribe" && token === process.env.WHATSAPP_VERIFY_TOKEN) {
-      return new Response(challenge ?? "", {
-        status: 200,
-        headers: { "Content-Type": "text/plain" },
-      });
-    }
-    return new Response("Forbidden", { status: 403 });
-  }),
-});
-
-/**
- * Mensajes entrantes.
- *
- * La regla que no se rompe: NUNCA llamar al LLM aquí. Se valida, se guarda,
- * se agenda y se responde 200. Si nos demoramos, WhatsApp reintenta el
- * webhook mientras el modelo todavía piensa, y terminamos respondiendo dos
- * veces y pagando doble inferencia.
- */
 http.route({
   path: "/webhook/whatsapp",
   method: "POST",
   handler: httpAction(async (ctx, request) => {
-    // El cuerpo CRUDO, antes de cualquier parseo. Re-serializar el JSON
-    // cambia espacios y orden de claves, y la firma deja de coincidir.
+    // El cuerpo CRUDO, antes de parsear. Re-serializar el JSON cambia
+    // espacios y orden de claves, y la firma deja de coincidir.
     const raw = await request.text();
-    const signature = request.headers.get("x-hub-signature-256");
 
-    if (!(await firmaValida(raw, signature))) {
+    if (!(await firmaValida(raw, request.headers.get("x-webhook-signature")))) {
       return new Response("Firma inválida", { status: 401 });
     }
 
-    let payload: WhatsAppPayload;
+    let payload: unknown;
     try {
       payload = JSON.parse(raw);
     } catch {
-      // Payload ilegible: 200 igual, para que Meta no reintente en bucle.
+      // Payload ilegible: 200 igual, para que Kapso no reintente en bucle
+      // algo que nunca va a funcionar.
       return new Response(null, { status: 200 });
     }
 
+    const idempotencyKey = request.headers.get("x-idempotency-key") ?? undefined;
+
+    // La regla que no se rompe: aquí NO se llama al LLM. Se valida, se
+    // guarda, se agenda y se responde. Kapso corta a los 10 segundos.
     for (const mensaje of extraerMensajes(payload)) {
-      await ctx.runMutation(internal.bot.recibirMensaje, mensaje);
+      await ctx.runMutation(internal.bot.recibirMensaje, {
+        ...mensaje,
+        idempotencyKey,
+      });
     }
 
     return new Response(null, { status: 200 });
   }),
 });
 
-/** HMAC-SHA256 del cuerpo crudo con el App Secret, en tiempo constante. */
+/** HMAC-SHA256 hex del cuerpo crudo, comparado en tiempo constante. */
 async function firmaValida(
   raw: string,
   signature: string | null,
 ): Promise<boolean> {
-  const secret = process.env.WHATSAPP_APP_SECRET;
+  const secret = process.env.KAPSO_WEBHOOK_SECRET;
   if (!secret) {
-    // Sin secreto configurado no se acepta nada: fallar cerrado, no abierto.
-    console.error("[webhook] falta WHATSAPP_APP_SECRET");
+    // Sin secreto no se acepta nada: fallar cerrado, no abierto.
+    console.error("[webhook] falta KAPSO_WEBHOOK_SECRET");
     return false;
   }
-  if (!signature?.startsWith("sha256=")) return false;
+  if (!signature) return false;
 
   const key = await crypto.subtle.importKey(
     "raw",
@@ -99,7 +83,7 @@ async function firmaValida(
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 
-  return comparacionSegura(esperada, signature.slice("sha256=".length));
+  return comparacionSegura(esperada, signature.trim().toLowerCase());
 }
 
 /** Sin cortocircuito: no filtra información por el tiempo que tarda. */
@@ -118,50 +102,54 @@ export type MensajeEntrante = {
 };
 
 /**
- * Saca los mensajes útiles del payload de Meta, que viene muy anidado.
+ * Saca los mensajes útiles del payload de Kapso.
+ *
+ * Acepta las dos formas: el evento suelto y el lote (`batch: true` con
+ * `data: [...]`), porque un webhook con buffering activado manda el lote.
  *
  * Solo texto y respuestas de botón. Audio, imágenes y documentos se ignoran:
- * httpAction tiene tope de 20MB y no vamos a procesarlos en línea.
+ * el httpAction tiene tope de 20MB y no vamos a procesarlos en línea.
  */
-function extraerMensajes(payload: WhatsAppPayload): MensajeEntrante[] {
+function extraerMensajes(payload: unknown): MensajeEntrante[] {
+  const eventos = esLote(payload) ? payload.data : [payload];
   const salida: MensajeEntrante[] = [];
 
-  for (const entry of payload.entry ?? []) {
-    for (const change of entry.changes ?? []) {
-      for (const m of change.value?.messages ?? []) {
-        if (m.type === "text" && m.text?.body) {
-          salida.push({ phone: m.from, body: m.text.body, waMessageId: m.id });
-        } else if (m.type === "interactive") {
-          const reply = m.interactive?.button_reply;
-          if (reply) {
-            salida.push({
-              phone: m.from,
-              body: reply.title,
-              waMessageId: m.id,
-              buttonId: reply.id,
-            });
-          }
-        }
-      }
+  for (const evento of eventos) {
+    const m = (evento as KapsoEvent)?.message;
+    if (!m?.from || !m?.id) continue;
+
+    const reply = m.interactive?.button_reply;
+    if (reply) {
+      salida.push({
+        phone: m.from,
+        body: reply.title,
+        waMessageId: m.id,
+        buttonId: reply.id,
+      });
+    } else if (m.type === "text" && m.text?.body) {
+      salida.push({ phone: m.from, body: m.text.body, waMessageId: m.id });
     }
   }
   return salida;
 }
 
-type WhatsAppPayload = {
-  entry?: Array<{
-    changes?: Array<{
-      value?: {
-        messages?: Array<{
-          id: string;
-          from: string;
-          type: string;
-          text?: { body: string };
-          interactive?: { button_reply?: { id: string; title: string } };
-        }>;
-      };
-    }>;
-  }>;
+function esLote(p: unknown): p is { batch: true; data: unknown[] } {
+  return (
+    typeof p === "object" &&
+    p !== null &&
+    (p as { batch?: unknown }).batch === true &&
+    Array.isArray((p as { data?: unknown }).data)
+  );
+}
+
+type KapsoEvent = {
+  message?: {
+    id?: string;
+    from?: string;
+    type?: string;
+    text?: { body?: string };
+    interactive?: { button_reply?: { id: string; title: string } };
+  };
 };
 
 export default http;

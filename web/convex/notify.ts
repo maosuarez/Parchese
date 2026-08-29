@@ -49,8 +49,10 @@ export const avisarMatch = internalAction({
       `Van ${cuantosVan} personas y dura ${plan.durationMinutes} minutos.`;
 
     for (const telefono of telefonos) {
-      // TODO(Dev A): enviar por WhatsApp — ver docs/frentes/dev-a-canal-whatsapp.md
-      console.log(`[avisarMatch] → ${telefono}: ${texto}`);
+      await ctx.runAction(internal.whatsapp.enviarTexto, {
+        phone: telefono,
+        texto,
+      });
     }
   },
 });

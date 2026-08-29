@@ -1,30 +1,35 @@
 import { v } from "convex/values";
 import { internalAction } from "./_generated/server";
 
-// Canal de salida hacia WhatsApp.
+// Canal de salida hacia WhatsApp, vía Kapso.
+//
+// Kapso expone un proxy con la forma de la Cloud API de Meta, así que los
+// payloads son los mismos que documenta Meta; solo cambian la URL base y
+// la autenticación (X-API-Key en vez de Bearer de Meta).
+//
 // Va en action porque necesita red. Las actions NO reintentan solas y tienen
 // 10 minutos de timeout: los errores se manejan aquí.
 
-const API = "https://graph.facebook.com/v23.0";
+const API = "https://api.kapso.ai/meta/whatsapp/v24.0";
 
 function config() {
-  const token = process.env.WHATSAPP_TOKEN;
-  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
-  if (!token || !phoneNumberId) {
+  const apiKey = process.env.KAPSO_API_KEY;
+  const phoneNumberId = process.env.KAPSO_PHONE_NUMBER_ID;
+  if (!apiKey || !phoneNumberId) {
     throw new Error(
-      "Faltan WHATSAPP_TOKEN o WHATSAPP_PHONE_NUMBER_ID en el entorno de Convex.",
+      "Faltan KAPSO_API_KEY o KAPSO_PHONE_NUMBER_ID en el entorno de Convex.",
     );
   }
-  return { token, phoneNumberId };
+  return { apiKey, phoneNumberId };
 }
 
 async function enviar(body: Record<string, unknown>): Promise<void> {
-  const { token, phoneNumberId } = config();
+  const { apiKey, phoneNumberId } = config();
 
   const res = await fetch(`${API}/${phoneNumberId}/messages`, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${token}`,
+      "X-API-Key": apiKey,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ messaging_product: "whatsapp", ...body }),
@@ -54,7 +59,7 @@ export const enviarTexto = internalAction({
  * Límites de Meta: máximo 3 botones, título ≤20 caracteres, id ≤256,
  * cuerpo ≤1024. Pasarse de ahí es un 400, no un aviso.
  *
- * Cada botón es un campo que el LLM no tiene que adivinar: la respuesta
+ * Cada botón es un campo que el modelo no tiene que adivinar: la respuesta
  * llega con un id determinista, sin volver a interpretar texto libre.
  */
 export const enviarBotones = internalAction({
