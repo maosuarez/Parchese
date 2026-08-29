@@ -28,6 +28,8 @@ function cliente() {
 
 const ACTIVIDADES = [
   "caminar",
+  "correr",
+  "bici",
   "cafe",
   "cowork",
   "juego",
@@ -57,11 +59,13 @@ const SYSTEM = `Eres el normalizador del índice de planes de Parchese en Bogot�
 Recibes el contenido crudo de un evento raspado de la web (Luma, Eventbrite, Google Places, una página cualquiera). Tu trabajo es llamar a la herramienta estructurar_plan con lo que se pueda extraer.
 
 Actividades posibles (elige una):
-- caminar: caminatas, recorridos a pie, avistamiento, trote suave
+- caminar: caminatas, recorridos a pie, avistamiento, sacar el perro
+- correr: running, trote, entrenamientos de carrera, 5k/10k
+- bici: rodadas, ciclovía, ciclopaseos, salidas en bicicleta, MTB
 - cafe: catas, charlas en café, tertulias, brunch, gastronomía
 - cowork: trabajar o estudiar acompañado, sesiones de coworking
 - juego: juegos de mesa, cartas, ajedrez, trivias, videojuegos presenciales
-- cancha: fútbol, básquet, tenis, pádel, running en grupo, deporte de cancha
+- cancha: fútbol, básquet, tenis, pádel, voleibol, deporte de cancha
 - otro: cultura, música, mercados, talleres, cualquier plan que no encaje arriba
 
 Zonas de Bogotá: chapinero, usaquen, suba, teusaquillo, centro, chico, cedritos, kennedy, engativa, fontibon, candelaria, norte, sur, occidente. Normaliza sin tildes y en minúscula. "La 93" o "zona T" es chico. Si el evento no es en Bogotá, pon esBogota en false.
