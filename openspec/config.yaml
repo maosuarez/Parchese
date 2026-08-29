@@ -1,32 +1,53 @@
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+context: |
+  PulseUp — el repositorio de los planes de la ciudad, con dos puertas de entrada:
+  un bot de WhatsApp (para quien ya sabe qué quiere) y una app web con parrilla y
+  mapa (para quien quiere inspirarse o crear). Ambas puertas escriben lo mismo:
+  una intención.
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+  La definición de producto vive en docs/ y es la fuente de verdad:
+    docs/01-definicion-producto.md    qué construimos, para quién, los no-gos
+    docs/02-confianza-y-progresion.md la escalera de confianza, el QR, el puntaje
+    docs/03-modelo-de-datos.md        esquema de Convex
+    docs/04-validacion.md             qué probar antes de construir
 
-# Per-operation guidance (optional)
-# Add advisory guidance for how apply and archive work should be conducted.
-# This is separate from artifact rules above.
-# Example:
-#   operations:
-#     apply:
-#       guidance:
-#         - Keep test summaries concise
-#     archive:
-#       guidance:
-#         - Summarize the archive outcome before finishing
+  Stack: TanStack Start + React + Vite + Tailwind v4 + shadcn/Radix, Bun.
+  Backend: Convex (regla dura, no negociable). Canal conversacional: WhatsApp.
+  La app web vive en web/.
+
+  Reglas de producto que son también reglas de código:
+    - Una intención en estado open no se revela a ningún otro usuario.
+    - Si una intención vence sin match, no se envía ningún mensaje.
+    - Ningún copy sobre salud, sedentarismo o que la persona deba moverse.
+    - SocialBattery mide intensidad del plan, nunca el estado de la persona.
+    - Lugar público siempre. Mínimo 3 personas en planes de nivel 1.
+    - showed solo se marca por escaneo de QR, nunca autoreportado.
+    - Zona aproximada, nunca ubicación exacta en tiempo real.
+    - Al usuario final no se le cobra. Sin ranking global.
+
+  Idioma: español para documentación y copy de producto.
+
+rules:
+  proposal:
+    - Máximo 500 palabras. Si no cabe, el cambio es demasiado grande.
+    - Incluir siempre una sección "No-gos" con lo que queda explícitamente fuera.
+    - Verificar contra docs/01 y docs/02 antes de proponer; muchas ideas
+      razonables están descartadas por evidencia, no por gusto.
+  specs:
+    - Criterios de aceptación en formato EARS (UBICUO, POR EVENTO, POR ESTADO,
+      OPCIONAL, NO DESEADO, COMPLEJO).
+    - Nivel spec-anchored, no spec-as-source. Specs cortas y verificables.
+    - No especificar lo exploratorio. Solo lo que ya se sabe que va.
+  tasks:
+    - Trozos de máximo 2 horas.
+    - Cada tarea debe poder verificarse por separado.
+
+operations:
+  apply:
+    guidance:
+      - Revisar la lista de no-gos de CLAUDE.md antes de implementar.
+      - Resúmenes de prueba concisos.
+  archive:
+    guidance:
+      - Resumir qué quedó pendiente antes de cerrar.
