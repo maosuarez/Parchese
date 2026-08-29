@@ -6,13 +6,13 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/landing")({
   head: () => ({
     meta: [
-      { title: "PulseUp — Trabajar remoto sin vivir aislado" },
+      { title: "Parchese — Trabajar remoto sin vivir aislado" },
       {
         name: "description",
         content:
-          "PulseUp convierte pequeños momentos del día en movimiento, compañía y conexiones reales para quienes trabajan remoto y viven solos.",
+          "Parchese convierte pequeños momentos del día en movimiento, compañía y conexiones reales para quienes trabajan remoto y viven solos.",
       },
-      { property: "og:title", content: "PulseUp — Trabajar remoto sin vivir aislado" },
+      { property: "og:title", content: "Parchese — Trabajar remoto sin vivir aislado" },
       {
         property: "og:description",
         content:
@@ -63,10 +63,10 @@ function LandingPage() {
           <span className="grid size-9 place-items-center rounded-2xl bg-cyan/15 text-cyan">
             <Zap className="size-4" />
           </span>
-          <span className="font-sans text-lg font-semibold">PulseUp</span>
+          <span className="font-sans text-lg font-semibold">Parchese</span>
         </span>
         <Button asChild size="sm">
-          <Link to="/">Probar PulseUp</Link>
+          <Link to="/">Probar Parchese</Link>
         </Button>
       </header>
 
@@ -79,12 +79,12 @@ function LandingPage() {
             Trabajar remoto <span className="text-gradient-pulse">sin vivir aislado</span>
           </h1>
           <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground">
-            PulseUp convierte pequeños momentos del día en movimiento, compañía y conexiones reales.
+            Parchese convierte pequeños momentos del día en movimiento, compañía y conexiones reales.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild size="lg">
               <Link to="/">
-                Probar PulseUp <ArrowRight className="ml-1 size-4" />
+                Probar Parchese <ArrowRight className="ml-1 size-4" />
               </Link>
             </Button>
             <Button asChild size="lg" variant="secondary">
@@ -92,7 +92,7 @@ function LandingPage() {
             </Button>
           </div>
           <p className="mt-8 max-w-xl rounded-3xl border border-border bg-panel/60 p-5 text-sm leading-relaxed text-muted-foreground">
-            “PulseUp es el copiloto social de las personas que trabajan remoto y viven solas. Entiende
+            “Parchese es el copiloto social de las personas que trabajan remoto y viven solas. Entiende
             cuándo necesitas moverte, recargar, trabajar acompañado o ver personas y convierte ese
             momento en una misión real con un pequeño grupo compatible cerca de ti.”
           </p>
@@ -147,7 +147,7 @@ function LandingPage() {
             cafés, coworking, bienestar y actividades.
           </p>
           <Button asChild size="lg" className="mt-6">
-            <Link to="/">Probar PulseUp</Link>
+            <Link to="/">Probar Parchese</Link>
           </Button>
         </section>
       </main>

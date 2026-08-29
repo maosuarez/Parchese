@@ -1,7 +1,7 @@
 schema: spec-driven
 
 context: |
-  PulseUp — el repositorio de los planes de la ciudad, con dos puertas de entrada:
+  Parchese — el repositorio de los planes de la ciudad, con dos puertas de entrada:
   un bot de WhatsApp (para quien ya sabe qué quiere) y una app web con parrilla y
   mapa (para quien quiere inspirarse o crear). Ambas puertas escriben lo mismo:
   una intención.

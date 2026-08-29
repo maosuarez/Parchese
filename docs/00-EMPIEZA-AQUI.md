@@ -6,7 +6,7 @@
 
 ## Qué estamos construyendo
 
-**PulseUp es el repositorio de los planes de la ciudad, con dos puertas de entrada.**
+**Parchese es el repositorio de los planes de la ciudad, con dos puertas de entrada.**
 
 - **WhatsApp** — para quien ya sabe qué quiere. Le escribe al bot y este le devuelve un plan.
 - **Web** — para quien quiere inspirarse o crear. Parrilla y mapa de planes reales.

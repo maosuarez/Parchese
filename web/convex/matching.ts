@@ -84,6 +84,8 @@ async function registrarYEmparejar(
     minPeople: 2,
     requiredTrustLevel: 1,
     origin: "matched",
+    status: "pending",
+    qrToken: crypto.randomUUID(),
   });
 
   await ctx.db.patch(intentId, { status: "matched", planId });
