@@ -37,7 +37,10 @@ export const avisarMatch = internalAction({
     if (!datos) return;
 
     const { plan, telefonos, cuantosVan } = datos;
+    // Convex corre en UTC. Sin timeZone, un plan de las 8pm se anuncia como
+    // la 1am del día siguiente.
     const hora = new Date(plan.startsAt).toLocaleTimeString("es-CO", {
+      timeZone: "America/Bogota",
       hour: "2-digit",
       minute: "2-digit",
     });

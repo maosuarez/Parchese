@@ -156,6 +156,7 @@ export const procesarMensaje = internalAction({
       const lista = planes
         .map((p) => {
           const cuando = new Date(p.startsAt).toLocaleString("es-CO", {
+            timeZone: "America/Bogota", // Convex corre en UTC
             weekday: "short",
             hour: "2-digit",
             minute: "2-digit",
